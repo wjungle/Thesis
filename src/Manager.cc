@@ -24,7 +24,7 @@ Manager::Manager()
 
 Manager::~Manager()
 {
-    //delete mqmsg; //delete puback;
+
 }
 
 

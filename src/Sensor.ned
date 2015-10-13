@@ -29,6 +29,7 @@ simple Sensor
         int rtoInitMethod;
         int rtoMultMethod;
         int rtoCalcMethod;
+        int overhearing;
         int quanSize = default(512);
         double range;
         @display("i=block/wtx");

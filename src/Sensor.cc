@@ -46,6 +46,7 @@ void Sensor::initialize()
     rtoCalcMethod = par("rtoCalcMethod");
     size = par("quanSize");
     range = par("range");
+    overhearing = par("overhearing");
     messageTimestamp = 0; receackTimestamp = 0;
 
     msg = new MqttMessage("p", MQTT_PUBLISH);
@@ -271,12 +272,23 @@ void Sensor::handleMessage(cMessage *msg)
         if (mqmsg->getDestAddress() != getIndex())
         {
             if(mqmsg->getRto()>0)
-                ev << "(1)rto from gateway= " << value[mqmsg->getRto()]<< endl;
+            {
+                ev << "(others)rto from gateway= " << value[mqmsg->getRto()] << " current RTO= " << Rto << endl;
+                if (overhearing == 1)
+                {
+                    if (Rto < value[mqmsg->getRto()])
+                    {
+                        ev << "change RTO with overhearing!\n";
+                        Rto = value[mqmsg->getRto()];
+                    }
+                }
+            }
+            delete mqmsg;
         }
         else
         {
             if(mqmsg->getRto()>0)
-                ev << "(2)rto from gateway= " << value[mqmsg->getRto()]<< endl;
+                ev << "(self)rto from gateway= " << value[mqmsg->getRto()] << " current RTO= " << Rto<< endl;
 
             if(currReceackSn < mqmsg->getSerialNumber())    // let currReceackSn be non-decreasing
                 currReceackSn = mqmsg->getSerialNumber();

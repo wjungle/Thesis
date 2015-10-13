@@ -60,6 +60,7 @@ class Sensor : public cSimpleModule
     double value[SIZE];
     double rtoGateway;
     int size;
+    int overhearing;
 
     long numMessage, numPublish, numPuback, numFailed, numThrow, numPreemptived;
     long numYes, numNo, numStrong, numWeak;

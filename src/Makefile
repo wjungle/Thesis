@@ -34,6 +34,7 @@ OBJS = \
     $O/BrokerProcess.o \
     $O/Gateway.o \
     $O/GatewayProcess.o \
+    $O/Manager.o \
     $O/Sensor.o \
     $O/Wireless.o \
     $O/MqttMessage_m.o
@@ -136,6 +137,9 @@ $O/Gateway.o: Gateway.cc \
 	MqttMessage_m.h
 $O/GatewayProcess.o: GatewayProcess.cc \
 	GatewayProcess.h \
+	MqttMessage_m.h
+$O/Manager.o: Manager.cc \
+	Manager.h \
 	MqttMessage_m.h
 $O/MqttMessage_m.o: MqttMessage_m.cc \
 	MqttMessage_m.h
