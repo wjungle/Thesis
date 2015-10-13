@@ -1,2 +1,5 @@
 /out
 /simulations/results
+/src/MqttMessage_m.cc
+/src/MqttMessage_m.h
+/src/mqtt.exe
