@@ -17,37 +17,40 @@ package mqtt;
 
 network Mqtt
 {
-	parameters:
+    parameters:
         int numSensors @prompt("Number of sensors") = default(1);
         @display("bgb=459,255");
     submodules:
         sensor[numSensors]: Sensor {
             parameters:
-            	@display("p=69,200,m,10,80");
+                @display("p=69,200,m,10,80");
         }
-//        sensor2[numSensors]: Sensor2 {
-//         	@display("p=69,213");   
-//        }
-        gateway: Gateway {
+
+        //        gateway: Gateway {
+        //            parameters:
+        //                pkRate = 1.5*numSensors;
+        //                queueMaxLen = 20;
+        //            	@display("p=213,121");
+        //            gates:
+        //                in[numSensors+1];
+        //                out[numSensors+1];
+        //        }
+        gw: GW {
             parameters:
-                pkRate = 1.5*numSensors;
-                queueMaxLen = 20;
-            	@display("p=213,121");
+                @display("p=213,121;is=vl");
             gates:
-                in[numSensors+1];
-                out[numSensors+1];
+                port[numSensors+1];	//declare for connecting with broker
+
         }
         broker: Broker {
             parameters:
-            	@display("p=359,122");
+                @display("p=359,122");
         }
     connections:
         for i=0..numSensors-1 {
-            sensor[i].out --> Wireless --> gateway.in[i];
-            sensor[i].in <-- Wireless <-- gateway.out[i];
-//            sensor2[i].out --> { delay = 0ms; } --> gateway.in[i];
-//            sensor2[i].in <-- { delay = 0ms; } <-- gateway.out[i];
+            sensor[i].out --> Wireless --> gw.port$i[i];
+            sensor[i].in <-- Wireless <-- gw.port$o[i];
         }
-        gateway.out[numSensors] --> Backbone --> broker.in;
-        gateway.in[numSensors] <-- Backbone <-- broker.out;
+        gw.port$o[numSensors] --> Backbone --> broker.in;
+        gw.port$i[numSensors] <-- Backbone <-- broker.out;
 }

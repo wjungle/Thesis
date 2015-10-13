@@ -53,7 +53,7 @@ class GatewayProcess : public cSimpleModule
     cOutVector RtoVector, RttsVector, RttwVector, RttVector, RtoSensorVector;
     double Rtt_s, Rtt_w;
 
-    // method
+    // thesis
     double granularity, range;
     double value[SIZE];
     double rttSensorS, rttSensorW;

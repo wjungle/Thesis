@@ -40,6 +40,8 @@ packet MqttMessage {
 //    double arrayField2[10];
     int srcAddress;
     int destAddress;
+    int managerAddr;
+    int gatewayAddr;
     int gatewayProcId;
     int brokerProcId;
     

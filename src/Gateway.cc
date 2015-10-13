@@ -54,8 +54,11 @@ void Gateway::handleMessage(cMessage *msg)
     {
         EV << mqmsg->getName() << " received, sending back an GWINFO message. \n";
         src = mqmsg->getSrcAddress();
+        int mAddr = mqmsg->getManagerAddr();
+        //ev << "mProcId= " << mProcId << endl;
         gwinfo = new MqttMessage("GWINFO", MQTT_GWINFO);
-        send(gwinfo, "out", src);
+        gwinfo->setDestAddress(src);
+        send(gwinfo, "line$o", mAddr);
         delete mqmsg;
     }
 
@@ -68,6 +71,7 @@ void Gateway::handleMessage(cMessage *msg)
     }
     else
     {
+        //int mAddr = mqmsg->getManagerAddr();
         int gatewayProcId = mqmsg->getGatewayProcId();
         //EV << "Redirecting msg to process ID=" << gatewayProcId  << endl;
         cModule *mod = simulation.getModule(gatewayProcId);

@@ -40,7 +40,7 @@ class Sensor : public cSimpleModule
 
     int seq, busy;
     int failed, successful, retransmission;
-    int ownAddr, serverAddr;
+    int ownAddr, serverAddr, gatewayAddr;
     int brokerprocId, gatewayprocId;
 
     int currMessageSn, currMessageSs, currTimeoutSn, currTimeoutRe, currPubackSn;

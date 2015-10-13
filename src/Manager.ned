@@ -18,21 +18,12 @@ package mqtt;
 //
 // TODO auto-generated module
 //
-simple Gateway
+simple Manager
 {
     parameters:
-//        double pkRate;
-//        int queueMaxLen;
-        double timeout @unit(s) @prompt("Connection timeout") = default(7s);
-        int limit @unit(times) = default(1times);
-        int method;
         double range;
-        int quanSize = default(512);
-        @display("i=block/departure");
+        int broadcast = default(0);
+        @display("i=block/fork");
     gates:
-        //        input in[];
-        //        output out[];
         inout line[];
-//        output out;
-
 }

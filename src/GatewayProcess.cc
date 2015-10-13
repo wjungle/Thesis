@@ -83,18 +83,28 @@ void GatewayProcess::handleMessage(cMessage *msg)
 {
     MqttMessage *mqmsg = check_and_cast<MqttMessage *>(msg);
 
-    if ((mqmsg->getKind() == MQTT_CONNECT) || (mqmsg->getKind() == MQTT_CONNACK))
+    if ((mqmsg->getKind() == MQTT_CONNECT) /*|| (mqmsg->getKind() == MQTT_CONNACK)*/)
     {
         // forward
-        dest = mqmsg->getDestAddress();
-        gatewayDestGate = getParentModule()->gate("out", dest);
-        EV << "Relaying msg to addr=" << dest << "\n";
+        //dest = mqmsg->getDestAddress();
+        gatewayDestGate = getParentModule()->gate("line$o", 1);
+        EV << "Relaying msg to addr=" << 1 << "\n";
 
         mqmsg -> setGatewayProcId(getId());
         sendDirect(mqmsg, gatewayDestGate);
         gatewayDestGate = NULL;
     }
 
+    else if (mqmsg->getKind() == MQTT_CONNACK)
+    {
+        //int manager = mqmsg->getManagerAddr();
+        cGate *managerDestGate = getParentModule()->gate("line$o", 0);
+        //EV << "Relaying back msg to addr=" << manager << "\n";
+        //EV << "GatewayProcId=" << mqmsg->getGatewayProcId() << "\n";
+//        mqmsg -> setGatewayProcId(getId());
+        sendDirect(mqmsg, managerDestGate);
+        managerDestGate = NULL;
+    }
 
     /***************************************/
     /************  from Sensor  ************/
@@ -112,20 +122,21 @@ void GatewayProcess::handleMessage(cMessage *msg)
                 rttSensorS = value[idxS];
                 rttSensorW = value[idxW];
                 ev << "rttSensorS= " << rttSensorS << " rttSensorW= " << rttSensorW << endl;
-                if (rttSensorS >= 0)
+                if (rttSensorS > 0)
                 {
                     numStrong++;
                     rtoSensorS = rfc6298(&srttSensorS, &rttvarSensorS, rttSensorS, numStrong, 4);
                     ev << "rtoSensorS= " << rtoSensorS ;
                     rtoSensor = 0.5 * rtoSensor + 0.5 * rtoSensorS;
-                    ev << " rtoSensor = " << rtoSensor<< endl;
                 }
-                else if (rttSensorW >= 0)
+                else if (rttSensorW > 0)
                 {
                     numWeak++;
                     rtoSensorW = rfc6298(&srttSensorW, &rttvarSensorW, rttSensorW, numWeak, 1);
+                    ev << "rtoSensorW= " << rtoSensorW ;
                     rtoSensor = 0.75 * rtoSensor + 0.25 * rtoSensorW;
                 }
+                ev << " ;rtoSensor = " << rtoSensor << endl;
                 RtoSensorVector.record(rtoSensor);
             }
             else
@@ -382,7 +393,7 @@ void GatewayProcess::handleMessage(cMessage *msg)
                     ev << "numRecPub=" << numRecPub <<" numPuback=" << numPuback<< endl;
                     rtoAll = rtoSensor/* + rtoGw*/;
                     idxRto = quantization(rtoAll);
-                    ev << "    rtoAll= " << rtoAll << " rtoSensor= " << rtoSensor <<  endl;
+                    ev << "    >>>>>> " << " rtoSensor= " << rtoSensor <<  endl;
                     ev << "    idxRto= " << idxRto << endl;
                 }
 
@@ -396,7 +407,7 @@ void GatewayProcess::handleMessage(cMessage *msg)
                 RttwVector.record(Rtt_w);
 
                 char msgname0[20];
-                sprintf(msgname0, "(%d) #%d ", getIndex(), mqmsg->getSerialNumber());
+                sprintf(msgname0, "(%d) #%d ", clientId, mqmsg->getSerialNumber());//getIndex()
                 EV << "          " << msgname0 << "calcRTT= " << Rtt << endl;
                 EV << "          " << "RTT_s= " << Rtt_s << " Rtt_w= " << Rtt_w << endl;
                 EV << "          " << "rtoGw= " << rtoGw << endl;
@@ -407,9 +418,11 @@ void GatewayProcess::handleMessage(cMessage *msg)
                 puback = new MqttMessage(msgname, MQTT_PUBACK);
                 puback->setSerialNumber(publishMessageSn);
                 puback->setSensorRetry(publishMessageRe);
+                puback->setSrcAddress(mqmsg->getSrcAddress());
+                puback->setDestAddress(mqmsg->getDestAddress());
                 puback->setRto(idxRto);         // thesis
                 //puback->setGatewayRetry(puback->getGatewayRetry());
-                gatewaySrcGate = getParentModule()->gate("out", src);
+                gatewaySrcGate = getParentModule()->gate("line$o", 0);
 
                 sendDirect(puback, gatewaySrcGate);
                 EV << "sending Time: " << puback->getSendingTime();
@@ -444,7 +457,7 @@ MqttMessage *GatewayProcess::generateNewMessage(unsigned int sn, unsigned int se
 void GatewayProcess::sendCopyOf(MqttMessage *msg)
 {
     MqttMessage *copy = (MqttMessage *) msg->dup();
-    gatewayDestGate = getParentModule()->gate("out", dest);
+    gatewayDestGate = getParentModule()->gate("line$o", 1);
     sendDirect(copy, gatewayDestGate);
     if(msg->getGatewayRetry() == 0)
     {
@@ -554,10 +567,10 @@ double GatewayProcess::rfc6298(double *srtt, double *rttvar, double rtt, unsigne
     }
 
     double tmp = *srtt + factorK * *rttvar;
-    //ev << "tmp= " << tmp << " n=" << n << endl;
-    if (tmp < 1)
-        return 1;
-    else
+//    ev << "tmp= " << tmp << " n=" << n << endl;
+//    if (tmp < 1)
+//        return 1;
+//    else
         return tmp;
 }
 

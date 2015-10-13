@@ -13,26 +13,34 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package mqtt;
+#ifndef __THESIS_MANAGER_H_
+#define __THESIS_MANAGER_H_
 
-//
-// TODO auto-generated module
-//
-simple Gateway
+#include <omnetpp.h>
+//#include <stdio.h>
+//#include <string.h>
+
+#define SIZE 512
+#include "MqttMessage_m.h"
+/**
+ * TODO - Generated class
+ */
+class Manager : public cSimpleModule
 {
-    parameters:
-//        double pkRate;
-//        int queueMaxLen;
-        double timeout @unit(s) @prompt("Connection timeout") = default(7s);
-        int limit @unit(times) = default(1times);
-        int method;
-        double range;
-        int quanSize = default(512);
-        @display("i=block/departure");
-    gates:
-        //        input in[];
-        //        output out[];
-        inout line[];
-//        output out;
+  private:
+    int gatewayAddr;
+    // thesis
+    double granularity, range;
+    double value[SIZE];
+    int numPuback;
+    cOutVector RtoVector;
+    int broadcast;
 
-}
+
+  protected:
+    virtual void initialize();
+    virtual void handleMessage(cMessage *msg);
+    virtual void initQuantization();
+};
+
+#endif

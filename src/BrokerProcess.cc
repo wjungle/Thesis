@@ -55,7 +55,6 @@ void BrokerProcess::handleMessage(cMessage *msg)
     }
     else if (mqmsg->getKind() == MQTT_PUBLISH)
     {
-
 //        if ((mqmsg -> getSensorRetry() == 0) && (mqmsg -> getGatewayRetry() == 0))
 //                numPublish++;
         if (fromMessageSn < mqmsg->getSerialNumber())
@@ -93,8 +92,10 @@ void BrokerProcess::handleMessage(cMessage *msg)
 
 void BrokerProcess::finish()
 {
+    EV << "src " << src << endl;
     EV << "number of receive PUBLISH: " << numPublish << endl;
-    recordScalar("src", src);
-    recordScalar("number of receive PUBLISH", numPublish);
-    recordScalar("Duplicated Publications Ratio", (double)numDuplicated/numPublish);
+    EV << "Duplicated Publications Ratio " << (double)numDuplicated/numPublish << endl;
+    recordScalar("src ", src);
+    recordScalar("number of receive PUBLISH ", numPublish);
+    recordScalar("Duplicated Publications Ratio ", (double)numDuplicated/numPublish);
 }

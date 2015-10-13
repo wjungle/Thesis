@@ -58,6 +58,7 @@ void Sensor::initialize()
     seq = 0; busy = 0; failed = 0; successful = 0; retransmission = 0;
     ownAddr = gate("out")->getNextGate()->getIndex();
     serverAddr =gate("out")->getNextGate()->size()-1;
+    gatewayAddr = gate("out")->getNextGate()->size()-1;
     brokerprocId = 0; gatewayprocId = 0;
 
     currMessageSn = -1; currMessageSs = -1;
@@ -72,7 +73,7 @@ void Sensor::initialize()
     totalRtt=0; strongRtt=0; weakRtt=0;
 
     // thesis
-    rtoGateway = 2;
+    rtoGateway = -1; //RTO calculated from Gateway
     idxS=0; idxW=0;
 
     numMessage = 0; numPublish = 0; numPuback = 0;
@@ -83,6 +84,7 @@ void Sensor::initialize()
     EV << "Sending SEARCHGW message 2\n";
     searchgw = new MqttMessage("MQTT_SEARCHGW", MQTT_SEARCHGW);
     searchgw->setSrcAddress(ownAddr);
+    searchgw->setGatewayAddr(gatewayAddr);
 
     MqttMessage *copy = (MqttMessage *) searchgw->dup();
     send(copy, "out");
@@ -90,8 +92,8 @@ void Sensor::initialize()
     //searchgw = NULL;
 
     // TIMEOUT event
-    scheduleAt(simTime()+ 3, timeoutSearch);    //TIMEOUT event
-    EV << "; timeout: " << simTime()+ 3 << " rto Fixed: " << 3 <<endl;
+    scheduleAt(simTime()+ rtoFixed, timeoutSearch);    //TIMEOUT event
+    //EV << "; timeout: " << simTime()+ rtoFixed << " rto Fixed: " << rtoFixed <<endl;
 
     initQuantization();
 
@@ -99,10 +101,10 @@ void Sensor::initialize()
     WATCH(numMessage); WATCH(numPublish); WATCH(numPuback);
     WATCH(numFailed); WATCH(numThrow);
 
-    RttVector.setName("gateway RTT");
+    RttVector.setName("sensor RTT");
     RttwVector.setName("sensor weak RTT");
     RttsVector.setName("sensor strong RTT");
-    RtoVector.setName("gateway RTO");
+    RtoVector.setName("sensor RTO");
 
     numYes=0; numNo=0;
 
@@ -263,161 +265,180 @@ void Sensor::handleMessage(cMessage *msg)
     // RECEACK
     else if (mqmsg->getKind() == MQTT_PUBACK)
     {
-        if(currReceackSn < mqmsg->getSerialNumber())    // let currReceackSn be non-decreasing
-            currReceackSn = mqmsg->getSerialNumber();
-        currReceackRe = mqmsg->getSensorRetry();
+//        ev << "PUBACK-src= " << mqmsg->getSrcAddress() << " dest= " << mqmsg->getDestAddress() << endl;
+//        ev << "sensor address= " << getIndex() << " rto from gateway= " << value[mqmsg->getRto()]<< endl;
 
-        EV << "currMessageSn= " << currMessageSn << "; currMessageSs= " << currMessageSs <<"     fail= " << failed << endl;
-        EV << "currTimeoutSn= " << currTimeoutSn << "; currTimeoutRe= " << currTimeoutRe << endl;
-        EV << "currReceackSn= " << currReceackSn << "; currReceackRe= " << currReceackRe << endl;
-
-        if(currReceackSn >= currMessageSn)
+        if (mqmsg->getDestAddress() != getIndex())
         {
-            if (failed == currReceackSn)
-            {
-                EV << "PUBACK was timeout~ numPuback:" << numPuback << " f: " << numFailed << endl;
-                cancelEvent(timeoutEvent);
-            }
-            else if (successful == currReceackSn)
-            {
-                EV << "PUBACK has received, but re-sending is before it. " << endl;
-            }
-            else
-            {
-                // PUBACK message arrived.
-                if (currPubackSn < mqmsg->getSerialNumber())
-                    numPuback++;
-                if (par("discipline").longValue() == 1)
-                {
-                    retransmission = 0;             //coap discipline
-                    currNumberOfRetry = 0;          //coap discipline
-                }
-                currPubackSn = mqmsg->getSerialNumber();
-                successful = currReceackSn; //currMessageSn;
-                busy = 0;
-                EV << "numPuback= " << numPuback << endl;
-                EV << currReceackSn << " " << mqmsg->getName() << " arrived time: " << mqmsg->getArrivalTime() << endl;
-
-                // EV << "Timer cancelled.\n";
-                cancelEvent(timeoutEvent);
-
-                totalRetry += mqmsg->getSensorRetry();
-                receackTimestamp = mqmsg->getArrivalTime().dbl();
-                Rtt = receackTimestamp - messageTimestamp;
-
-                // thesis; the second PUBACK just receive calculated RTO from gateway.
-                if (numPuback > 1)
-                {
-                    rtoGateway = value[mqmsg->getRto()];
-                    ev << "[" << mqmsg->getRto() << "]"<<" rtoGateway= " << rtoGateway << endl;
-                }
-
-                // RFC 6298
-                if (rtoCalcMethod == 0)
-                {
-                    ev << "[[[RFC 6298 method]]]" << endl;
-                    // Karn's algorithm
-                    if(mqmsg->getSensorRetry() == 0)
-                    {
-                        Rtt_s = receackTimestamp - messageTimestamp;
-                        RtoS = rfc6298(&srtt, &rttvar, Rtt_s, numPuback, 4);
-                        RtoS = adjustRange6298(RtoS);
-                    }
-                    Rto = RtoS;
-                }
-                // CoCoA+
-                else if (rtoCalcMethod == 1)
-                {
-                    ev << "[[[[CoCoa+ method]]]" << endl;
-                    // Karn's algorithm, strong estimator
-                    if(mqmsg->getSensorRetry() == 0)
-                    {
-                        numStrong++;
-                        Rtt_s = receackTimestamp - messageTimestamp;
-                        RtoS = rfc6298(&srttS, &rttvarS, Rtt_s, numStrong, 4);
-                        Rto = 0.5 * Rto + 0.5 * RtoS;
-                        ev << "Rtt_s= " << Rtt_s << " RtoS= " << RtoS << endl;
-
-                        // verify
-    //                    if (Rtt_s > 10)
-    //                    {
-    //                        if (  (currReceackSn == currTimeoutSn) && (currReceackRe <= currTimeoutRe))
-    //                            numYes++;
-    //                        else
-    //                        {
-    //                            std::cerr << "currReceackSn = " << currReceackSn << endl;
-    //                            numNo++;
-    //                        }
-    //                    }
-                    }
-                    else
-                    {
-                        numWeak++;
-                        Rtt_w = receackTimestamp - messageTimestamp;
-                        RtoW = rfc6298(&srttW, &rttvarW, Rtt_w, numWeak, 1);
-                        Rto = 0.75 * Rto + 0.25 * RtoW;
-                        ev << "Rtt_w= " << Rtt_w << " RtoW= " << RtoW << endl ;
-                    }
-                    Rto = adjustRangeCocoa(Rto);
-                    // aging for cocoa+
-                    RtoA = Rto;
-                    cancelEvent(timeoutAging);
-                    scheduleAt(simTime() + 30, timeoutAging);
-
-                    strongRtt += Rtt_s; //calculate total
-                    weakRtt += Rtt_w;
-                }
-                // thesis
-                else if (rtoCalcMethod == 2)
-                {
-                    ev << "[[[thesis method]]]" << endl;
-                    // Karn's algorithm, strong estimator
-                    if(mqmsg->getSensorRetry() == 0)
-                    {
-                        numStrong++;
-                        Rtt_s = receackTimestamp - messageTimestamp;
-                        idxS = quantization(Rtt_s);
-                        idxW = 0;
-                    }
-                    else
-                    {
-                        numWeak++;
-                        Rtt_w = receackTimestamp - messageTimestamp;
-                        idxW = quantization(Rtt_w);
-                        idxS = 0;
-                    }
-                    Rto = rtoGateway;
-                }
-
-                totalRtt += Rtt;
-//                RttVector.record(Rtt);
-                RtoVector.record(Rto);
-//                RttsVector.record(Rtt_s);
-//                RttwVector.record(Rtt_w);
-
-//                std::cerr << "rtt= " <<  mqmsg->getSerialNumber() << endl;
-
-                char msgname[20];
-                sprintf(msgname, "(%d) #%d ", getIndex(), mqmsg->getSerialNumber());
-                EV << msgname << "======================>>calcRTT= " << Rtt << " totalRetry2= " << totalRetry2 <<endl;
-                EV << "==========================>>RTT_s= " << Rtt_s << " Rtt_w= " << Rtt_w << " Rto= " << Rto << endl;
-
-#if 0
-                if (numPublish > 1000000)
-                {
-                    endSimulation();
-                }
-#endif
-            }
+            if(mqmsg->getRto()>0)
+                ev << "(1)rto from gateway= " << value[mqmsg->getRto()]<< endl;
         }
-//        else
-//        {
-//            EV << "expired PUBACK message: " << mqmsg->getSerialNumber() << " process is terminated." << endl;
-//        }
-        delete mqmsg;
+        else
+        {
+            if(mqmsg->getRto()>0)
+                ev << "(2)rto from gateway= " << value[mqmsg->getRto()]<< endl;
+
+            if(currReceackSn < mqmsg->getSerialNumber())    // let currReceackSn be non-decreasing
+                currReceackSn = mqmsg->getSerialNumber();
+            currReceackRe = mqmsg->getSensorRetry();
+
+            EV << "currMessageSn= " << currMessageSn << "; currMessageSs= " << currMessageSs <<"     fail= " << failed << endl;
+            EV << "currTimeoutSn= " << currTimeoutSn << "; currTimeoutRe= " << currTimeoutRe << endl;
+            EV << "currReceackSn= " << currReceackSn << "; currReceackRe= " << currReceackRe << endl;
+
+            if(currReceackSn >= currMessageSn)
+            {
+                if (failed == currReceackSn)
+                {
+                    EV << "PUBACK was timeout~ numPuback:" << numPuback << " f: " << numFailed << endl;
+                    cancelEvent(timeoutEvent);
+                }
+                else if (successful == currReceackSn)
+                {
+                    EV << "PUBACK has received, but re-sending is before it. " << endl;
+                }
+                else
+                {
+                    // PUBACK message arrived.
+                    if (currPubackSn < mqmsg->getSerialNumber())
+                        numPuback++;
+                    if (par("discipline").longValue() == 1)
+                    {
+                        retransmission = 0;             //coap discipline
+                        currNumberOfRetry = 0;          //coap discipline
+                    }
+                    currPubackSn = mqmsg->getSerialNumber();
+                    successful = currReceackSn; //currMessageSn;
+                    busy = 0;
+                    EV << "numPuback= " << numPuback << endl;
+                    EV << currReceackSn << " " << mqmsg->getName() << " arrived time: " << mqmsg->getArrivalTime() << endl;
+
+                    // EV << "Timer cancelled.\n";
+                    cancelEvent(timeoutEvent);
+
+                    totalRetry += mqmsg->getSensorRetry();
+                    receackTimestamp = mqmsg->getArrivalTime().dbl();
+                    Rtt = receackTimestamp - messageTimestamp;
+
+                    // thesis; the second PUBACK just receive calculated RTO from gateway.
+                    if (numPuback > 1)
+                    {
+                        rtoGateway = value[mqmsg->getRto()];
+                        ev << "[" << mqmsg->getRto() << "]"<<" rtoGateway= " << rtoGateway << endl;
+                    }
+
+                    if (rtoCalcMethod == 0)
+                    {
+
+                    }
+                    // RFC 6298
+                    else if (rtoCalcMethod == 1)
+                    {
+                        ev << "[[[RFC 6298 method]]]" << endl;
+                        // Karn's algorithm
+                        if(mqmsg->getSensorRetry() == 0)
+                        {
+                            Rtt_s = receackTimestamp - messageTimestamp;
+                            RtoS = rfc6298(&srtt, &rttvar, Rtt_s, numPuback, 4);
+                            RtoS = adjustRange6298(RtoS);
+                        }
+                        Rto = RtoS;
+                    }
+                    // CoCoA+
+                    else if (rtoCalcMethod == 2)
+                    {
+                        ev << "[[[[CoCoa+ method]]]" << endl;
+                        // Karn's algorithm, strong estimator
+                        if(mqmsg->getSensorRetry() == 0)
+                        {
+                            numStrong++;
+                            Rtt_s = receackTimestamp - messageTimestamp;
+                            RtoS = rfc6298(&srttS, &rttvarS, Rtt_s, numStrong, 4);
+                            Rto = 0.5 * Rto + 0.5 * RtoS;
+                            ev << "Rtt_s= " << Rtt_s << " RtoS= " << RtoS << endl;
+
+                            // verify
+        //                    if (Rtt_s > 10)
+        //                    {
+        //                        if (  (currReceackSn == currTimeoutSn) && (currReceackRe <= currTimeoutRe))
+        //                            numYes++;
+        //                        else
+        //                        {
+        //                            std::cerr << "currReceackSn = " << currReceackSn << endl;
+        //                            numNo++;
+        //                        }
+        //                    }
+                        }
+                        else
+                        {
+                            numWeak++;
+                            Rtt_w = receackTimestamp - messageTimestamp;
+                            RtoW = rfc6298(&srttW, &rttvarW, Rtt_w, numWeak, 1);
+                            Rto = 0.75 * Rto + 0.25 * RtoW;
+                            ev << "Rtt_w= " << Rtt_w << " RtoW= " << RtoW << endl ;
+                        }
+                        Rto = adjustRangeCocoa(Rto);
+                        // aging for cocoa+
+                        RtoA = Rto;
+                        cancelEvent(timeoutAging);
+                        scheduleAt(simTime() + 30, timeoutAging);
+
+                        strongRtt += Rtt_s; //calculate total
+                        weakRtt += Rtt_w;
+                    }
+                    // thesis
+                    else if (rtoCalcMethod == 3)
+                    {
+                        ev << "[[[thesis method]]]" << endl;
+                        // Karn's algorithm, strong estimator
+                        if(mqmsg->getSensorRetry() == 0)
+                        {
+                            numStrong++;
+                            Rtt_s = receackTimestamp - messageTimestamp;
+                            idxS = quantization(Rtt_s);
+                            idxW = 0;
+                        }
+                        else
+                        {
+                            numWeak++;
+                            Rtt_w = receackTimestamp - messageTimestamp;
+                            idxW = quantization(Rtt_w);
+                            idxS = 0;
+                        }
+                        if (rtoGateway > 0)
+                            Rto = rtoGateway;
+                    }
+
+                    totalRtt += Rtt;
+    //                RttVector.record(Rtt);
+                    RtoVector.record(Rto);
+    //                RttsVector.record(Rtt_s);
+    //                RttwVector.record(Rtt_w);
+
+    //                std::cerr << "rtt= " <<  mqmsg->getSerialNumber() << endl;
+
+                    char msgname[20];
+                    sprintf(msgname, "(%d) #%d ", getIndex(), mqmsg->getSerialNumber());
+                    EV << msgname << "======================>>calcRTT= " << Rtt << " totalRetry2= " << totalRetry2 <<endl;
+                    EV << "==========================>>RTT_s= " << Rtt_s << " Rtt_w= " << Rtt_w << " Rto= " << Rto << endl;
+
+    #if 0
+                    if (numPublish > 1000000)
+                    {
+                        endSimulation();
+                    }
+    #endif
+                }
+            }
+    //        else
+    //        {
+    //            EV << "expired PUBACK message: " << mqmsg->getSerialNumber() << " process is terminated." << endl;
+    //        }
+            delete mqmsg;
+        }
+        if (ev.isGUI())
+            updateDisplay();
     }
-    if (ev.isGUI())
-        updateDisplay();
 }
 
 void Sensor::publishMessage()
