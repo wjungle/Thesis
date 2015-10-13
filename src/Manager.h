@@ -36,6 +36,9 @@ class Manager : public cSimpleModule
     cOutVector RtoVector;
     int broadcast;
 
+  public:
+    Manager();
+    virtual ~Manager();
 
   protected:
     virtual void initialize();

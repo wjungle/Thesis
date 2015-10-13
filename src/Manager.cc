@@ -17,6 +17,17 @@
 
 Define_Module(Manager);
 
+Manager::Manager()
+{
+
+}
+
+Manager::~Manager()
+{
+    //delete mqmsg; //delete puback;
+}
+
+
 void Manager::initialize()
 {
 //    gatewayAddr = getVectorSize();
@@ -74,12 +85,8 @@ void Manager::handleMessage(cMessage *msg)
             EV << " rto= " << value[rtoIdx] << endl;
             RtoVector.record(value[rtoIdx]);
         }
-        if (broadcast == 2)
-        {
-            dest = mqmsg->getDestAddress();
-            send(mqmsg, "line$o", dest);
-        }
-        else if (broadcast == 1)
+
+        if (broadcast == 1)
         {
             for(int i = 0; i < (gate("line$o", 0)->getVectorSize()-1); i++)
             {
@@ -87,6 +94,11 @@ void Manager::handleMessage(cMessage *msg)
                 send(copy, "line$o", i);
             }
             delete mqmsg;
+        }
+        else
+        {
+            dest = mqmsg->getDestAddress();
+            send(mqmsg, "line$o", dest);
         }
     }
 }

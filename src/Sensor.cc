@@ -32,7 +32,8 @@ Sensor::~Sensor()
     cancelAndDelete(timeoutEvent);
     cancelAndDelete(publishEventFixed);
     cancelAndDelete(publishEventExpon);
-    delete searchgw; delete connect; delete publish;
+    //delete searchgw;delete connect;
+    delete publish;
     // delete gwinfo; delete advertise;
 }
 
@@ -138,9 +139,8 @@ void Sensor::handleMessage(cMessage *msg)
         scheduleAt(simTime()+ rtoFixed, timeoutConnect);    //TIMEOUT event
         //EV << "; timeout: " << simTime()+ rtoFixed << " rto Fixed: " << rtoFixed <<endl;
         //
-        //connect = NULL;
-        searchgw = NULL;
         delete mqmsg;
+        delete searchgw;
     }
 
     else if (mqmsg->getKind() == SELF_TIMEOUT_S)
@@ -179,7 +179,7 @@ void Sensor::handleMessage(cMessage *msg)
         scheduleAt(simTime()+0.0, publishEventFixed);
         scheduleAt(simTime()+0.0, publishEventExpon);
         delete mqmsg;
-        connect = NULL;
+        delete connect;
     }
 
     // PUBLISH (MESSAGE)
