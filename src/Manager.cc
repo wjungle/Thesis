@@ -81,8 +81,23 @@ void Manager::handleMessage(cMessage *msg)
         int rtoIdx = mqmsg->getRto();
         if (numPuback > 1)
         {
-            EV << "manager-numPuback= " << numPuback  << " rtoIdx=" << rtoIdx << endl;
-            EV << " rto= " << value[rtoIdx] << endl;
+            EV << "manager-numPuback= " << numPuback  << " rtoIdx=" << rtoIdx << " rto= " << value[rtoIdx] << endl;
+
+            static int rtoIdxAll;
+            static double rtoAll;
+            if (numPuback == 2)
+            {
+                rtoIdxAll = rtoIdx;
+                rtoAll = value[rtoIdx];
+            }
+            else if (numPuback > 2)
+            {
+                rtoIdxAll = round(rtoIdxAll*0.5) + round(rtoIdx*0.5);
+                rtoAll = 0.5*rtoAll + 0.5*value[rtoIdx];
+            }
+//            ev << " rtoAll= " << rtoAll << endl;
+//            ev << "rtoIdxAll = " << rtoIdxAll << " value[rtoIdxAll]=" <<  value[rtoIdxAll] << endl;
+
             RtoVector.record(value[rtoIdx]);
         }
 
