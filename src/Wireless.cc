@@ -23,8 +23,6 @@ void Wireless::initialize()
     cDelayChannel::initialize();
 
     plr = par("PLR");
-    constant = par("gammaConst");
-    gamma = gamma_d(par("gammaAlpha"), par("gammaBeta"));
 }
 
 void Wireless::processMessage(cMessage *msg, simtime_t t, result_t& result)
@@ -45,6 +43,8 @@ void Wireless::processMessage(cMessage *msg, simtime_t t, result_t& result)
         // propagation delay modeling
         //simtime_t delay = par("IaTime");
         //par("gammaConst"); //+
+        constant = par("gammaConst");
+        gamma = gamma_d(par("gammaAlpha"), par("gammaBeta"));
         simtime_t delay = constant + gamma;
         EV <<" (w)delay Time: " << delay <<endl;
         result.delay = delay;

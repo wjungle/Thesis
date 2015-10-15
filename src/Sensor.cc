@@ -39,6 +39,7 @@ Sensor::~Sensor()
 
 void Sensor::initialize()
 {
+    haveGwinfo = 0; haveConnack = 0;
     rtoFixed = par("timeout");
     maxRetry = par("limit");
     rtoInitMethod = par("rtoInitMethod");
@@ -117,15 +118,13 @@ void Sensor::handleMessage(cMessage *msg)
 {
     MqttMessage *mqmsg = check_and_cast<MqttMessage *>(msg);
 
-    static bool haveGwinfo = 0;
-    static bool haveConnack = 0;
-
     // GWINFO -> CONNECT
     if (mqmsg->getKind() == MQTT_GWINFO)
     {
         if(haveGwinfo)
         {
             //have received gwinfo
+            delete mqmsg;
         }
         else
         {
@@ -184,6 +183,7 @@ void Sensor::handleMessage(cMessage *msg)
         if(haveConnack)
         {
             //have received connack
+            delete mqmsg;
         }
         else
         {

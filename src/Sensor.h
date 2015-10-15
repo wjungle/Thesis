@@ -29,6 +29,8 @@
 class Sensor : public cSimpleModule
 {
    private:
+    bool haveGwinfo;
+    bool haveConnack;
     double timeout, rtoInit, rtoCalc, rtoFixed;
     unsigned int maxRetry;
     int rtoInitMethod, rtoMultMethod, rtoCalcMethod;
