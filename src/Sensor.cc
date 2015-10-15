@@ -117,31 +117,44 @@ void Sensor::handleMessage(cMessage *msg)
 {
     MqttMessage *mqmsg = check_and_cast<MqttMessage *>(msg);
 
+    static bool haveGwinfo = 0;
+    static bool haveConnack = 0;
+
     // GWINFO -> CONNECT
     if (mqmsg->getKind() == MQTT_GWINFO)
     {
-        if (timeoutSearch->isScheduled())
-            cancelEvent(timeoutSearch);
-        // GWINFO message arrived.
-        EV << mqmsg->getName() << " arrived; send ";
+        if(haveGwinfo)
+        {
+            //have received gwinfo
+        }
+        else
+        {
+            if (timeoutSearch->isScheduled())
+                cancelEvent(timeoutSearch);
+    //        if (timeoutConnect->isScheduled())
+    //            cancelEvent(timeoutConnect);
+            // GWINFO message arrived.
+            EV << mqmsg->getName() << " arrived; send ";
+            haveGwinfo = 1;
 
-        // Generate the CONNECT message.
-        char msgname[20];
-        sprintf(msgname, "CONNECT(%d)", getIndex());
-        EV << msgname << endl;
-        connect = new MqttMessage (msgname, MQTT_CONNECT);
-        connect -> setSrcAddress(ownAddr);
-        connect -> setDestAddress(serverAddr);
-        //
-        MqttMessage *copy = (MqttMessage *) connect->dup();
-        send(copy, "out");
-        //send(connect, "out");
-        // TIMEOUT event
-        scheduleAt(simTime()+ rtoFixed, timeoutConnect);    //TIMEOUT event
-        //EV << "; timeout: " << simTime()+ rtoFixed << " rto Fixed: " << rtoFixed <<endl;
-        //
-        delete mqmsg;
-        delete searchgw;
+            // Generate the CONNECT message.
+            char msgname[20];
+            sprintf(msgname, "CONNECT(%d)", getIndex());
+            EV << msgname << endl;
+            connect = new MqttMessage (msgname, MQTT_CONNECT);
+            connect -> setSrcAddress(ownAddr);
+            connect -> setDestAddress(serverAddr);
+            //
+            MqttMessage *copy = (MqttMessage *) connect->dup();
+            send(copy, "out");
+            //send(connect, "out");
+            // TIMEOUT event
+            scheduleAt(simTime()+ rtoFixed, timeoutConnect);    //TIMEOUT event
+            //EV << "; timeout: " << simTime()+ rtoFixed << " rto Fixed: " << rtoFixed <<endl;
+            //
+            delete mqmsg;
+            delete searchgw;
+        }
     }
 
     else if (mqmsg->getKind() == SELF_TIMEOUT_S)
@@ -168,19 +181,27 @@ void Sensor::handleMessage(cMessage *msg)
     // CONNACK -> publishEvent
     else if (mqmsg->getKind() == MQTT_CONNACK)
     {
-        if (timeoutConnect->isScheduled())
-            cancelEvent(timeoutConnect);
-        // CONNACK message arrived.
-        EV << mqmsg->getName() << " arrived ";
-        brokerprocId = mqmsg->getBrokerProcId();
-        gatewayprocId = mqmsg->getGatewayProcId();
+        if(haveConnack)
+        {
+            //have received connack
+        }
+        else
+        {
+            if (timeoutConnect->isScheduled())
+                cancelEvent(timeoutConnect);
+            // CONNACK message arrived.
+            EV << mqmsg->getName() << " arrived ";
+            haveConnack = 1;
+            brokerprocId = mqmsg->getBrokerProcId();
+            gatewayprocId = mqmsg->getGatewayProcId();
 
-        // Generate the first publishEvent to start PUBLISH.
-        EV << "Sending the first publishEvent message\n";
-        scheduleAt(simTime()+0.0, publishEventFixed);
-        scheduleAt(simTime()+0.0, publishEventExpon);
-        delete mqmsg;
-        delete connect;
+            // Generate the first publishEvent to start PUBLISH.
+            EV << "Sending the first publishEvent message\n";
+            scheduleAt(simTime()+0.0, publishEventFixed);
+            scheduleAt(simTime()+0.0, publishEventExpon);
+            delete mqmsg;
+            delete connect;
+        }
     }
 
     // PUBLISH (MESSAGE)
