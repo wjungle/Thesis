@@ -22,8 +22,9 @@ void Wireless::initialize()
     //EV << "PacketLogger initialize()\n";
     cDelayChannel::initialize();
 
-
     plr = par("PLR");
+    constant = par("gammaConst");
+    gamma = gamma_d(par("gammaAlpha"), par("gammaBeta"));
 }
 
 void Wireless::processMessage(cMessage *msg, simtime_t t, result_t& result)
@@ -42,7 +43,9 @@ void Wireless::processMessage(cMessage *msg, simtime_t t, result_t& result)
         // if channel is disabled, signal that message should be deleted
         result.discard = 0;
         // propagation delay modeling
-        simtime_t delay = par("IaTime");
+        //simtime_t delay = par("IaTime");
+        //par("gammaConst"); //+
+        simtime_t delay = constant + gamma;
         EV <<" (w)delay Time: " << delay <<endl;
         result.delay = delay;
     }

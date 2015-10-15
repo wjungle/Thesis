@@ -23,6 +23,7 @@ class Wireless : public cDelayChannel
   protected:
     double plr;
     long int counter;
+    double constant, gamma;
     //std::ofstream logfile;
 
   public:
