@@ -40,6 +40,8 @@ void Manager::initialize()
     numPuback = 0;
 
     broadcast = par("broadcast");
+    rtoIdxAll=-1;
+    rtoAll=0;
 
     initQuantization();
 }
@@ -57,6 +59,8 @@ void Manager::handleMessage(cMessage *msg)
     else if (mqmsg->getKind() == MQTT_GWINFO)
     {
         int dest = mqmsg->getDestAddress();
+//        if (rtoIdxAll >= 0)
+//            mqmsg->setRto(rtoIdxAll);
         send(mqmsg, "line$o", dest);
     }
     else if (mqmsg->getKind() == MQTT_CONNECT)
@@ -83,8 +87,6 @@ void Manager::handleMessage(cMessage *msg)
         {
             EV << "manager-numPuback= " << numPuback  << " rtoIdx=" << rtoIdx << " rto= " << value[rtoIdx] << endl;
 
-            static int rtoIdxAll;
-            static double rtoAll;
             if (numPuback == 2)
             {
                 rtoIdxAll = rtoIdx;

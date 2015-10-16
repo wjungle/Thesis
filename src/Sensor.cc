@@ -140,6 +140,9 @@ void Sensor::handleMessage(cMessage *msg)
             char msgname[20];
             sprintf(msgname, "CONNECT(%d)", getIndex());
             EV << msgname << endl;
+
+//            ev << "receive initRto= " << mqmsg->getRto() << endl;
+
             connect = new MqttMessage (msgname, MQTT_CONNECT);
             connect -> setSrcAddress(ownAddr);
             connect -> setDestAddress(serverAddr);

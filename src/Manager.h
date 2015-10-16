@@ -35,6 +35,8 @@ class Manager : public cSimpleModule
     int numPuback;
     cOutVector RtoVector;
     int broadcast;
+    int rtoIdxAll;
+    double rtoAll;
 
   public:
     Manager();
