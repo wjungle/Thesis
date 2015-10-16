@@ -539,7 +539,7 @@ void Sensor::handlePublishPersistent()
 
     //cancelEvent(timeoutEvent);
     scheduleAt(simTime()+rtoInit, timeoutEvent);    //TIMEOUT event
-    EV << "; timeout: " << simTime()+rtoInit << " rto init: " << rtoInit <<endl;
+    EV << "; timeout: " << simTime()+rtoInit << " rto init: " << rtoInit << " ;number of attempts: " << endl;
 }
 
 void Sensor::handlePublishCoap()
@@ -578,12 +578,13 @@ void Sensor::handlePublishCoap()
     timeoutEvent->setRtoCalc(rtoInit);
 
     scheduleAt(simTime()+ rtoInit, timeoutEvent);    //TIMEOUT event
-    EV << "; timeout: " << simTime()+ rtoInit << " rto init: " << rtoInit <<endl;
+    EV << "; timeout: " << simTime()+ rtoInit << " rto init: " << rtoInit << " ;number of attempts: " << retry <<endl;
 }
 
 void Sensor::handleTimeout(MqttMessage *mqmsg)
 {
-    currNumberOfRetry++;
+//    currNumberOfRetry++;
+    currNumberOfRetry = mqmsg->getSensorRetry()+1;
     //currTimeoutRe = mqmsg->getSensorRetry();
 //            EV << ">>currTimeoutSn= " << currTimeoutSn << "; currTimeoutRe= " << currTimeoutRe << endl;
     EV << "Timeout of PUBLISH expired, re-sending message and restarting timer  ";
