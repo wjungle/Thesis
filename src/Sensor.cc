@@ -443,7 +443,7 @@ void Sensor::handleMessage(cMessage *msg)
                     }
 
                     totalRtt += Rtt;
-    //                RttVector.record(Rtt);
+                    RttVector.record(Rtt);
                     RtoVector.record(Rto);
     //                RttsVector.record(Rtt_s);
     //                RttwVector.record(Rtt_w);
@@ -583,7 +583,6 @@ void Sensor::handlePublishCoap()
 
 void Sensor::handleTimeout(MqttMessage *mqmsg)
 {
-//    currNumberOfRetry++;
     currNumberOfRetry = mqmsg->getSensorRetry()+1;
     //currTimeoutRe = mqmsg->getSensorRetry();
 //            EV << ">>currTimeoutSn= " << currTimeoutSn << "; currTimeoutRe= " << currTimeoutRe << endl;

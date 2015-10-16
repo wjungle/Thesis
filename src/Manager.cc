@@ -98,7 +98,8 @@ void Manager::handleMessage(cMessage *msg)
 //            ev << " rtoAll= " << rtoAll << endl;
 //            ev << "rtoIdxAll = " << rtoIdxAll << " value[rtoIdxAll]=" <<  value[rtoIdxAll] << endl;
 
-            RtoVector.record(value[rtoIdx]);
+            mqmsg->setRto(rtoIdxAll);
+            RtoVector.record(value[rtoIdxAll]);
         }
 
         if (broadcast == 1)

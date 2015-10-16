@@ -40,7 +40,7 @@ void GatewayProcess::initialize()
     receackTimestamp = 0;
 
     timeoutEvent = new MqttMessage("timeout", SELF_TIMEOUT);
-    msg = new MqttMessage("p", MQTT_PUBLISH);
+    msg = new MqttMessage("ppp", MQTT_PUBLISH);
 
     sn = 0; src = 0; dest = 0; clientId = 0;
 
