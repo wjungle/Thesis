@@ -19,7 +19,7 @@
 #include <omnetpp.h>
 #include "MqttMessage_m.h"
 
-#define SIZE 512
+#define SIZE 1024
 /**
  * TODO - Generated class
  */

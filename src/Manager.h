@@ -20,7 +20,7 @@
 //#include <stdio.h>
 //#include <string.h>
 
-#define SIZE 512
+#define SIZE 1024
 #include "MqttMessage_m.h"
 /**
  * TODO - Generated class
