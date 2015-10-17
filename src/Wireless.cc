@@ -40,6 +40,44 @@ void Wireless::processMessage(cMessage *msg, simtime_t t, result_t& result)
     {
         // if channel is disabled, signal that message should be deleted
         result.discard = 0;
+
+//        if (t >= 60*60)
+//            alpha =; beta=;
+//        else if (t >= 120*60)
+//            alpha =; beta=;
+//        else if (t >= 180*60)
+//            alpha =; beta=;
+//        else if (t >= 240*60)
+//            alpha =; beta=;
+//        else if (t >= 300*60)
+//            alpha =; beta=;
+//        else if (t >= 360*60)
+//            alpha =; beta=;
+//        else if (t >= 420*60)
+//            alpha =; beta=;
+//        else if (t >= 480*60)
+//            alpha =; beta=;
+//        else if (t >= 540*60)
+//            alpha =; beta=;
+//        else if (t >= 600*60)
+//            alpha =; beta=;
+//        else if (t >= 660*60)
+//            alpha =; beta=;
+//        else if (t >= 720*60)
+//            alpha =; beta=;
+//        else if (t >= 780*60)
+//            alpha =; beta=;
+//        else if (t >= 840*60)
+//            alpha =; beta=;
+//        else if (t >= 900*60)
+//            alpha =; beta=;
+//        else if (t >= 960*60)
+//            alpha =; beta=;
+//        else if (t >= 1020*60)
+//            alpha =; beta=;
+//        else if (t >= 1080*60)
+//            alpha =; beta=;
+
         // propagation delay modeling
         //simtime_t delay = par("IaTime");
         //par("gammaConst"); //+
