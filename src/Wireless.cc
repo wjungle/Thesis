@@ -23,6 +23,7 @@ void Wireless::initialize()
     cDelayChannel::initialize();
 
     plr = par("PLR");
+    alpha = 0.057; beta = 71;
 }
 
 void Wireless::processMessage(cMessage *msg, simtime_t t, result_t& result)
@@ -41,48 +42,89 @@ void Wireless::processMessage(cMessage *msg, simtime_t t, result_t& result)
         // if channel is disabled, signal that message should be deleted
         result.discard = 0;
 
-//        if (t >= 60*60)
-//            alpha =; beta=;
-//        else if (t >= 120*60)
-//            alpha =; beta=;
-//        else if (t >= 180*60)
-//            alpha =; beta=;
-//        else if (t >= 240*60)
-//            alpha =; beta=;
-//        else if (t >= 300*60)
-//            alpha =; beta=;
-//        else if (t >= 360*60)
-//            alpha =; beta=;
-//        else if (t >= 420*60)
-//            alpha =; beta=;
-//        else if (t >= 480*60)
-//            alpha =; beta=;
-//        else if (t >= 540*60)
-//            alpha =; beta=;
-//        else if (t >= 600*60)
-//            alpha =; beta=;
-//        else if (t >= 660*60)
-//            alpha =; beta=;
-//        else if (t >= 720*60)
-//            alpha =; beta=;
-//        else if (t >= 780*60)
-//            alpha =; beta=;
-//        else if (t >= 840*60)
-//            alpha =; beta=;
-//        else if (t >= 900*60)
-//            alpha =; beta=;
-//        else if (t >= 960*60)
-//            alpha =; beta=;
-//        else if (t >= 1020*60)
-//            alpha =; beta=;
-//        else if (t >= 1080*60)
-//            alpha =; beta=;
+        constant = par("gammaConst");
+#if 1
+        if (t >= 1080*60)
+        {
+            alpha =0.054; beta = 52;
+        }
+        else if (t >= 1020*60)
+        {
+            alpha = 0.058; beta = 36;
+        }
+        else if (t >= 960*60)
+        {
+            alpha =0.056; beta = 30;
+        }
+        else if (t >= 900*60)
+        {
+            alpha =0.058; beta = 33;
+        }
+        else if (t >= 840*60)
+        {
+            alpha = 0.202; beta = 5;
+        }
+        else if (t >= 780*60)
+        {
+            alpha = 0.101; beta = 33;
+        }
+        else if (t >= 720*60)
+        {
+            alpha = 0.103; beta = 30;
+        }
+        else if (t >= 660*60)
+        {
+            alpha = 0.101; beta = 36;
+        }
+        else if (t >= 600*60)
+        {
+            alpha = 0.052; beta = 56;
+        }
+        else if (t >= 540*60)
+        {
+            alpha = 0.055; beta = 52;
+        }
+        else if (t >= 480*60)
+        {
+            alpha = 0.051; beta = 77;
+        }
+        else if (t >= 420*60)
+        {
+            alpha = 0.102; beta = 32;
+        }
+        else if (t >= 360*60)
+        {
+            alpha = 0.103; beta = 34;
+        }
+        else if (t >= 300*60)
+        {
+            alpha = 0.101; beta = 27;
+        }
+        else if (t >= 240*60)
+        {
+            alpha = 0.0575; beta = 44;
+        }
+        else if (t >= 180*60)
+        {
+            alpha = 0.155; beta = 22;
+        }
+        else if (t >= 120*60)
+        {
+            alpha = 0.052; beta = 70;
+        }
+        else if (t >= 60*60)
+        {
+            alpha = 0.055; beta = 63;
+        }
+        gamma = gamma_d(alpha, beta);
+#else
+        gamma = gamma_d(par("gammaAlpha"), par("gammaBeta"));
+#endif
 
         // propagation delay modeling
         //simtime_t delay = par("IaTime");
         //par("gammaConst"); //+
-        constant = par("gammaConst");
-        gamma = gamma_d(par("gammaAlpha"), par("gammaBeta"));
+
         simtime_t delay = constant + gamma;
         EV <<" (w)delay Time: " << delay <<endl;
         result.delay = delay;

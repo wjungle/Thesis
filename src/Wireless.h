@@ -24,6 +24,7 @@ class Wireless : public cDelayChannel
     double plr;
     long int counter;
     double constant, gamma;
+    double alpha, beta;
     //std::ofstream logfile;
 
   public:
