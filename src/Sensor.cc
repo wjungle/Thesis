@@ -442,7 +442,12 @@ void Sensor::handleMessage(cMessage *msg)
                             idxS = 0;
                         }
                         if (rtoGateway > 0)
-                            Rto = rtoGateway;
+                        {
+//                            if ((rtoGateway > Rto) && (rtoGateway - Rto <=2))
+//                                Rto = rtoGateway;
+//                            if ((rtoGateway < Rto) && (Rto - rtoGateway <= 1))
+                                Rto = rtoGateway;
+                        }
                     }
 
                     totalRtt += Rtt;
@@ -593,6 +598,10 @@ void Sensor::handleTimeout(MqttMessage *mqmsg)
 
     // Publish message.
     totalRetry2++;
+    if (totalRetry2 == 10)
+        recordScalar("#retry=10 time:", simTime());
+    if (totalRetry2 == 100)
+        recordScalar("#retry=100 time:", simTime());
     char msgname[20];
     publish->setSensorRetry(mqmsg->getSensorRetry()+1);
     sprintf(msgname, "PUBLISH(%d) #%d-%d ", mqmsg->getClientId(), mqmsg->getSerialNumber(), publish->getSensorRetry());
@@ -872,4 +881,5 @@ void Sensor::finish()
     recordScalar("#DPR", (double)numThrow/numMessage);
     recordScalar("#mean RTT", totalRtt/numPuback);
     recordScalar("#mean Retry", (double)totalRetry2/numPublish);
+    recordScalar("#total Retry", totalRetry2);
 }
