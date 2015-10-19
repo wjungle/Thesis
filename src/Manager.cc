@@ -94,7 +94,7 @@ void Manager::handleMessage(cMessage *msg)
             }
             else if (numPuback > 2)
             {
-                rtoIdxAll = round(rtoIdxAll*0.875) + round(rtoIdx*0.125);
+                rtoIdxAll = round(rtoIdxAll*0.5) + round(rtoIdx*0.5);
                 rtoAll = 0.5*rtoAll + 0.5*value[rtoIdx];
             }
 //            ev << " rtoAll= " << rtoAll << endl;

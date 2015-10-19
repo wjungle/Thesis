@@ -20,7 +20,7 @@
 
 class Wireless : public cDelayChannel
 {
-  protected:
+  private:
     double plr;
     long int counter;
     double constant, gamma;

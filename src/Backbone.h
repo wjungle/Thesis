@@ -20,9 +20,11 @@
 
 class Backbone : public cDelayChannel
 {
-  protected:
+  private:
     double plr;
     long int counter;
+    double constant, gamma;
+    double alpha, beta;
 
   public:
     explicit Backbone(const char *name = NULL) : cDelayChannel(name) { counter = 0; }
