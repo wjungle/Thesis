@@ -39,9 +39,9 @@ void Backbone::processMessage(cMessage *msg, simtime_t t, result_t& result)
         // if channel is disabled, signal that message should be deleted
         result.discard = 0;
         // propagation delay modeling
-#if 0
-        constant = par("gammaConst");
-        gamma = gamma_d(par("gammaAlpha"), par("gammaBeta"));
+#if 1
+        constant = 0;//par("gammaConst");
+        gamma = gamma_d(1, 0.04);
         simtime_t delay = constant + gamma;
 #else
         simtime_t delay = par("IaTime");

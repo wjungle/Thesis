@@ -42,9 +42,12 @@ void Wireless::processMessage(cMessage *msg, simtime_t t, result_t& result)
         result.discard = 0;
 
         // propagation delay modeling
-#if 0
-        constant = par("gammaConst");
-        gamma = gamma_d(par("gammaAlpha"), par("gammaBeta"));
+#if 1
+        constant = 0;//par("gammaConst");
+        double aaa = par("gammaAlpha");
+        double bbb = par("gammaBeta");
+        gamma = gamma_d(2, 0.04);
+//        ev << "alpha= " << aaa << " beta= " << bbb << endl;
         simtime_t delay = constant + gamma;
 #else
         simtime_t delay = par("IaTime");
