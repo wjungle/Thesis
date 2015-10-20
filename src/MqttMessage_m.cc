@@ -79,6 +79,8 @@ MqttMessage::MqttMessage(const char *name, int kind) : ::cPacket(name,kind)
 {
     this->srcAddress_var = 0;
     this->destAddress_var = 0;
+    this->managerAddr_var = 0;
+    this->gatewayAddr_var = 0;
     this->gatewayProcId_var = 0;
     this->brokerProcId_var = 0;
     this->departureTime_var = 0;
@@ -115,6 +117,8 @@ void MqttMessage::copy(const MqttMessage& other)
 {
     this->srcAddress_var = other.srcAddress_var;
     this->destAddress_var = other.destAddress_var;
+    this->managerAddr_var = other.managerAddr_var;
+    this->gatewayAddr_var = other.gatewayAddr_var;
     this->gatewayProcId_var = other.gatewayProcId_var;
     this->brokerProcId_var = other.brokerProcId_var;
     this->departureTime_var = other.departureTime_var;
@@ -135,6 +139,8 @@ void MqttMessage::parsimPack(cCommBuffer *b)
     ::cPacket::parsimPack(b);
     doPacking(b,this->srcAddress_var);
     doPacking(b,this->destAddress_var);
+    doPacking(b,this->managerAddr_var);
+    doPacking(b,this->gatewayAddr_var);
     doPacking(b,this->gatewayProcId_var);
     doPacking(b,this->brokerProcId_var);
     doPacking(b,this->departureTime_var);
@@ -155,6 +161,8 @@ void MqttMessage::parsimUnpack(cCommBuffer *b)
     ::cPacket::parsimUnpack(b);
     doUnpacking(b,this->srcAddress_var);
     doUnpacking(b,this->destAddress_var);
+    doUnpacking(b,this->managerAddr_var);
+    doUnpacking(b,this->gatewayAddr_var);
     doUnpacking(b,this->gatewayProcId_var);
     doUnpacking(b,this->brokerProcId_var);
     doUnpacking(b,this->departureTime_var);
@@ -188,6 +196,26 @@ int MqttMessage::getDestAddress() const
 void MqttMessage::setDestAddress(int destAddress)
 {
     this->destAddress_var = destAddress;
+}
+
+int MqttMessage::getManagerAddr() const
+{
+    return managerAddr_var;
+}
+
+void MqttMessage::setManagerAddr(int managerAddr)
+{
+    this->managerAddr_var = managerAddr;
+}
+
+int MqttMessage::getGatewayAddr() const
+{
+    return gatewayAddr_var;
+}
+
+void MqttMessage::setGatewayAddr(int gatewayAddr)
+{
+    this->gatewayAddr_var = gatewayAddr;
 }
 
 int MqttMessage::getGatewayProcId() const
@@ -367,7 +395,7 @@ const char *MqttMessageDescriptor::getProperty(const char *propertyname) const
 int MqttMessageDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 15+basedesc->getFieldCount(object) : 15;
+    return basedesc ? 17+basedesc->getFieldCount(object) : 17;
 }
 
 unsigned int MqttMessageDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -394,8 +422,10 @@ unsigned int MqttMessageDescriptor::getFieldTypeFlags(void *object, int field) c
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<15) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<17) ? fieldTypeFlags[field] : 0;
 }
 
 const char *MqttMessageDescriptor::getFieldName(void *object, int field) const
@@ -409,6 +439,8 @@ const char *MqttMessageDescriptor::getFieldName(void *object, int field) const
     static const char *fieldNames[] = {
         "srcAddress",
         "destAddress",
+        "managerAddr",
+        "gatewayAddr",
         "gatewayProcId",
         "brokerProcId",
         "departureTime",
@@ -423,7 +455,7 @@ const char *MqttMessageDescriptor::getFieldName(void *object, int field) const
         "rttW",
         "rto",
     };
-    return (field>=0 && field<15) ? fieldNames[field] : NULL;
+    return (field>=0 && field<17) ? fieldNames[field] : NULL;
 }
 
 int MqttMessageDescriptor::findField(void *object, const char *fieldName) const
@@ -432,19 +464,21 @@ int MqttMessageDescriptor::findField(void *object, const char *fieldName) const
     int base = basedesc ? basedesc->getFieldCount(object) : 0;
     if (fieldName[0]=='s' && strcmp(fieldName, "srcAddress")==0) return base+0;
     if (fieldName[0]=='d' && strcmp(fieldName, "destAddress")==0) return base+1;
-    if (fieldName[0]=='g' && strcmp(fieldName, "gatewayProcId")==0) return base+2;
-    if (fieldName[0]=='b' && strcmp(fieldName, "brokerProcId")==0) return base+3;
-    if (fieldName[0]=='d' && strcmp(fieldName, "departureTime")==0) return base+4;
-    if (fieldName[0]=='s' && strcmp(fieldName, "serialNumber")==0) return base+5;
-    if (fieldName[0]=='s' && strcmp(fieldName, "sensorRetry")==0) return base+6;
-    if (fieldName[0]=='g' && strcmp(fieldName, "gatewayRetry")==0) return base+7;
-    if (fieldName[0]=='r' && strcmp(fieldName, "rtoInit")==0) return base+8;
-    if (fieldName[0]=='r' && strcmp(fieldName, "rtoCalc")==0) return base+9;
-    if (fieldName[0]=='c' && strcmp(fieldName, "clientId")==0) return base+10;
-    if (fieldName[0]=='r' && strcmp(fieldName, "rtt")==0) return base+11;
-    if (fieldName[0]=='r' && strcmp(fieldName, "rttS")==0) return base+12;
-    if (fieldName[0]=='r' && strcmp(fieldName, "rttW")==0) return base+13;
-    if (fieldName[0]=='r' && strcmp(fieldName, "rto")==0) return base+14;
+    if (fieldName[0]=='m' && strcmp(fieldName, "managerAddr")==0) return base+2;
+    if (fieldName[0]=='g' && strcmp(fieldName, "gatewayAddr")==0) return base+3;
+    if (fieldName[0]=='g' && strcmp(fieldName, "gatewayProcId")==0) return base+4;
+    if (fieldName[0]=='b' && strcmp(fieldName, "brokerProcId")==0) return base+5;
+    if (fieldName[0]=='d' && strcmp(fieldName, "departureTime")==0) return base+6;
+    if (fieldName[0]=='s' && strcmp(fieldName, "serialNumber")==0) return base+7;
+    if (fieldName[0]=='s' && strcmp(fieldName, "sensorRetry")==0) return base+8;
+    if (fieldName[0]=='g' && strcmp(fieldName, "gatewayRetry")==0) return base+9;
+    if (fieldName[0]=='r' && strcmp(fieldName, "rtoInit")==0) return base+10;
+    if (fieldName[0]=='r' && strcmp(fieldName, "rtoCalc")==0) return base+11;
+    if (fieldName[0]=='c' && strcmp(fieldName, "clientId")==0) return base+12;
+    if (fieldName[0]=='r' && strcmp(fieldName, "rtt")==0) return base+13;
+    if (fieldName[0]=='r' && strcmp(fieldName, "rttS")==0) return base+14;
+    if (fieldName[0]=='r' && strcmp(fieldName, "rttW")==0) return base+15;
+    if (fieldName[0]=='r' && strcmp(fieldName, "rto")==0) return base+16;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -461,6 +495,8 @@ const char *MqttMessageDescriptor::getFieldTypeString(void *object, int field) c
         "int",
         "int",
         "int",
+        "int",
+        "int",
         "double",
         "int",
         "int",
@@ -473,7 +509,7 @@ const char *MqttMessageDescriptor::getFieldTypeString(void *object, int field) c
         "int",
         "int",
     };
-    return (field>=0 && field<15) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<17) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *MqttMessageDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -515,19 +551,21 @@ std::string MqttMessageDescriptor::getFieldAsString(void *object, int field, int
     switch (field) {
         case 0: return long2string(pp->getSrcAddress());
         case 1: return long2string(pp->getDestAddress());
-        case 2: return long2string(pp->getGatewayProcId());
-        case 3: return long2string(pp->getBrokerProcId());
-        case 4: return double2string(pp->getDepartureTime());
-        case 5: return long2string(pp->getSerialNumber());
-        case 6: return long2string(pp->getSensorRetry());
-        case 7: return long2string(pp->getGatewayRetry());
-        case 8: return double2string(pp->getRtoInit());
-        case 9: return double2string(pp->getRtoCalc());
-        case 10: return long2string(pp->getClientId());
-        case 11: return double2string(pp->getRtt());
-        case 12: return long2string(pp->getRttS());
-        case 13: return long2string(pp->getRttW());
-        case 14: return long2string(pp->getRto());
+        case 2: return long2string(pp->getManagerAddr());
+        case 3: return long2string(pp->getGatewayAddr());
+        case 4: return long2string(pp->getGatewayProcId());
+        case 5: return long2string(pp->getBrokerProcId());
+        case 6: return double2string(pp->getDepartureTime());
+        case 7: return long2string(pp->getSerialNumber());
+        case 8: return long2string(pp->getSensorRetry());
+        case 9: return long2string(pp->getGatewayRetry());
+        case 10: return double2string(pp->getRtoInit());
+        case 11: return double2string(pp->getRtoCalc());
+        case 12: return long2string(pp->getClientId());
+        case 13: return double2string(pp->getRtt());
+        case 14: return long2string(pp->getRttS());
+        case 15: return long2string(pp->getRttW());
+        case 16: return long2string(pp->getRto());
         default: return "";
     }
 }
@@ -544,19 +582,21 @@ bool MqttMessageDescriptor::setFieldAsString(void *object, int field, int i, con
     switch (field) {
         case 0: pp->setSrcAddress(string2long(value)); return true;
         case 1: pp->setDestAddress(string2long(value)); return true;
-        case 2: pp->setGatewayProcId(string2long(value)); return true;
-        case 3: pp->setBrokerProcId(string2long(value)); return true;
-        case 4: pp->setDepartureTime(string2double(value)); return true;
-        case 5: pp->setSerialNumber(string2long(value)); return true;
-        case 6: pp->setSensorRetry(string2long(value)); return true;
-        case 7: pp->setGatewayRetry(string2long(value)); return true;
-        case 8: pp->setRtoInit(string2double(value)); return true;
-        case 9: pp->setRtoCalc(string2double(value)); return true;
-        case 10: pp->setClientId(string2long(value)); return true;
-        case 11: pp->setRtt(string2double(value)); return true;
-        case 12: pp->setRttS(string2long(value)); return true;
-        case 13: pp->setRttW(string2long(value)); return true;
-        case 14: pp->setRto(string2long(value)); return true;
+        case 2: pp->setManagerAddr(string2long(value)); return true;
+        case 3: pp->setGatewayAddr(string2long(value)); return true;
+        case 4: pp->setGatewayProcId(string2long(value)); return true;
+        case 5: pp->setBrokerProcId(string2long(value)); return true;
+        case 6: pp->setDepartureTime(string2double(value)); return true;
+        case 7: pp->setSerialNumber(string2long(value)); return true;
+        case 8: pp->setSensorRetry(string2long(value)); return true;
+        case 9: pp->setGatewayRetry(string2long(value)); return true;
+        case 10: pp->setRtoInit(string2double(value)); return true;
+        case 11: pp->setRtoCalc(string2double(value)); return true;
+        case 12: pp->setClientId(string2long(value)); return true;
+        case 13: pp->setRtt(string2double(value)); return true;
+        case 14: pp->setRttS(string2long(value)); return true;
+        case 15: pp->setRttW(string2long(value)); return true;
+        case 16: pp->setRto(string2long(value)); return true;
         default: return false;
     }
 }

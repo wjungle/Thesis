@@ -69,6 +69,8 @@ enum MqttMessageType {
  *     //    double arrayField2[10];
  *     int srcAddress;
  *     int destAddress;
+ *     int managerAddr;
+ *     int gatewayAddr;
  *     int gatewayProcId;
  *     int brokerProcId;
  * 
@@ -101,6 +103,8 @@ class MqttMessage : public ::cPacket
   protected:
     int srcAddress_var;
     int destAddress_var;
+    int managerAddr_var;
+    int gatewayAddr_var;
     int gatewayProcId_var;
     int brokerProcId_var;
     double departureTime_var;
@@ -136,6 +140,10 @@ class MqttMessage : public ::cPacket
     virtual void setSrcAddress(int srcAddress);
     virtual int getDestAddress() const;
     virtual void setDestAddress(int destAddress);
+    virtual int getManagerAddr() const;
+    virtual void setManagerAddr(int managerAddr);
+    virtual int getGatewayAddr() const;
+    virtual void setGatewayAddr(int gatewayAddr);
     virtual int getGatewayProcId() const;
     virtual void setGatewayProcId(int gatewayProcId);
     virtual int getBrokerProcId() const;
