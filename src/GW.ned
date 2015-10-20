@@ -7,11 +7,13 @@ module GW
         int numSensors;
     gates:
         inout port[];
+        inout portBk;
     submodules:
         manager: Manager {
             @display("p=93,59");
             gates:
-                line[numSensors+1];
+                line[numSensors];
+//                lineGw;
         }
         gateway: Gateway {
             @display("p=298,59");
@@ -19,9 +21,9 @@ module GW
                 line[2];
         }
     connections:
-        manager.line[numSensors] <--> gateway.line[0];
+        manager.lineGw <--> gateway.line[0];
         for i=0..numSensors-1 {
             manager.line[i] <--> port[i];
         }
-        port[numSensors] <--> gateway.line[1];
+        portBk <--> gateway.line[1];
 }

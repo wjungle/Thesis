@@ -26,4 +26,5 @@ simple Manager
         @display("i=block/fork");
     gates:
         inout line[];
+        inout lineGw;
 }

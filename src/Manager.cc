@@ -52,9 +52,7 @@ void Manager::handleMessage(cMessage *msg)
 
     if (mqmsg->getKind() == MQTT_SEARCHGW)
     {
-        gatewayAddr = mqmsg->getGatewayAddr();
-        mqmsg->setManagerAddr(getIndex());
-        send(mqmsg, "line$o", gatewayAddr);
+        send(mqmsg, "lineGw$o");
     }
     else if (mqmsg->getKind() == MQTT_GWINFO)
     {
@@ -65,8 +63,7 @@ void Manager::handleMessage(cMessage *msg)
     }
     else if (mqmsg->getKind() == MQTT_CONNECT)
     {
-        mqmsg->setManagerAddr(getIndex());
-        send(mqmsg, "line$o", gatewayAddr);
+        send(mqmsg, "lineGw$o");
     }
     else if (mqmsg->getKind() == MQTT_CONNACK)
     {
@@ -75,8 +72,7 @@ void Manager::handleMessage(cMessage *msg)
     }
     else if (mqmsg->getKind() == MQTT_PUBLISH)
     {
-        mqmsg->setManagerAddr(getIndex());
-        send(mqmsg, "line$o", gatewayAddr);
+        send(mqmsg, "lineGw$o");
     }
     else if (mqmsg->getKind() == MQTT_PUBACK)
     {

@@ -39,7 +39,7 @@ network Mqtt
             parameters:
                 @display("p=213,121;is=vl");
             gates:
-                port[numSensors+1];	//declare for connecting with broker
+                port[numSensors];	//declare for connecting with broker
 
         }
         broker: Broker {
@@ -51,6 +51,6 @@ network Mqtt
             sensor[i].out --> Wireless --> gw.port$i[i];
             sensor[i].in <-- Wireless <-- gw.port$o[i];
         }
-        gw.port$o[numSensors] --> Backbone --> broker.in;
-        gw.port$i[numSensors] <-- Backbone <-- broker.out;
+        gw.portBk$o --> Backbone --> broker.in;
+        gw.portBk$i <-- Backbone <-- broker.out;
 }
