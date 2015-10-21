@@ -21,6 +21,8 @@ void Backbone::initialize()
 {
     cDelayChannel::initialize();
     plr = par("PLR");
+    alpha = par("gammaAlpha");
+    beta = par("gammaBeta");
 }
 
 void Backbone::processMessage(cMessage *msg, simtime_t t, result_t& result)
@@ -43,9 +45,10 @@ void Backbone::processMessage(cMessage *msg, simtime_t t, result_t& result)
 
         constant = par("gammaConst");
         gamma = gamma_d(par("gammaAlpha"), par("gammaBeta"));
-        simtime_t delay = constant + gamma;
+        gamma /= (alpha * beta);
+        delay = constant + (gamma*0.01);
 #else
-        simtime_t delay = par("IaTime");
+        delay = par("IaTime");
 #endif
         EV <<" (b)delay Time: " << delay <<endl;
         result.delay = delay;

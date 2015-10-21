@@ -23,8 +23,9 @@ class Wireless : public cDelayChannel
   private:
     double plr;
     long int counter;
-    double constant, gamma;
+    double constant, gamma, coeff;
     double alpha, beta;
+    simtime_t delay;
     //std::ofstream logfile;
 
   public:

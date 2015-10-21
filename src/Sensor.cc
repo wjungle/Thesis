@@ -73,7 +73,7 @@ void Sensor::initialize()
     Rtt = 0; Rtt_s = 0; Rtt_w = 0;
     Rto = 1; RtoS= 1; RtoW= 1; RtoA=0;
     srtt=0; rttvar=0; srttS=0; rttvarS=0; srttW=0; rttvarW=0;
-    totalRtt=0; strongRtt=0; weakRtt=0;
+    totalRtt=0; totalRttS=0; strongRtt=0; weakRtt=0;
 
     // thesis
     rtoGateway = -1; //RTO calculated from Gateway
@@ -227,18 +227,6 @@ void Sensor::handleMessage(cMessage *msg)
         scheduleAt(simTime()+publishIaTimeFixed, publishEventFixed);
 
         handlePublish(busy,  retransmission, par("discipline").longValue());
-
-//        if(!busy)
-//        {
-//            handlePublishEvent();
-//        }
-//        else
-//        {
-//            // throw away, not publish message
-//            //EV << "Throw away message" << "(" << simTime() << ")" << endl;
-//            //cancelEvent(timeoutEvent);
-//            numThrow++;
-//        }
     }
 #endif
 
@@ -338,11 +326,7 @@ void Sensor::handleMessage(cMessage *msg)
                     // PUBACK message arrived.
                     if (currPubackSn < mqmsg->getSerialNumber())
                         numPuback++;
-                    if (par("discipline").longValue() == 1)
-                    {
-                        retransmission = 0;             //coap discipline
-                        currNumberOfRetry = 0;          //coap discipline
-                    }
+
                     currPubackSn = mqmsg->getSerialNumber();
                     successful = currReceackSn; //currMessageSn;
                     busy = 0;
@@ -365,7 +349,22 @@ void Sensor::handleMessage(cMessage *msg)
 
                     if (rtoCalcMethod == 0)
                     {
-
+//                        if(mqmsg->getSensorRetry() == 0)
+//                        {
+//                               numStrong++;
+//                               if (retransmission == 0)
+//                                   Rtt_s = Rtt;
+//                               ev << "rttStrong= " << Rtt_s << endl;
+//                               if(Rtt > rtoInit)
+//                               {
+//                                   std::cerr << "strong>rto: " << Rtt << " " << mqmsg->getSerialNumber() << endl;
+//                                   std::cerr << "retransmission= " << retransmission << endl;
+//                               }
+//                        }
+//                        else
+//                        {
+//                            ev << "rttWeak= " << Rtt << endl;
+//                        }
                     }
                     // RFC 6298
                     else if (rtoCalcMethod == 1)
@@ -374,6 +373,7 @@ void Sensor::handleMessage(cMessage *msg)
                         // Karn's algorithm
                         if(mqmsg->getSensorRetry() == 0)
                         {
+                            numStrong++;
                             Rtt_s = receackTimestamp - messageTimestamp;
                             RtoS = rfc6298(&srtt, &rttvar, Rtt_s, numPuback, 4);
                             RtoS = adjustRange6298(RtoS);
@@ -451,8 +451,9 @@ void Sensor::handleMessage(cMessage *msg)
                     }
 
                     totalRtt += Rtt;
-                    RttVector.record(Rtt);
-                    RtoVector.record(Rto);
+                    totalRttS += Rtt_s;
+                    //RttVector.record(Rtt);
+                    //RtoVector.record(Rto);
     //                RttsVector.record(Rtt_s);
     //                RttwVector.record(Rtt_w);
 
@@ -462,6 +463,12 @@ void Sensor::handleMessage(cMessage *msg)
                     sprintf(msgname, "(%d) #%d ", getIndex(), mqmsg->getSerialNumber());
                     EV << msgname << "======================>>calcRTT= " << Rtt << " totalRetry2= " << totalRetry2 <<endl;
                     EV << "==========================>>RTT_s= " << Rtt_s << " Rtt_w= " << Rtt_w << " Rto= " << Rto << endl;
+
+                    if (par("discipline").longValue() == 1)
+                    {
+                        retransmission = 0;             //coap discipline
+                        currNumberOfRetry = 0;          //coap discipline
+                    }
 
     #if 0
                     if (numPublish > 1000000)
@@ -863,6 +870,7 @@ void Sensor::finish()
     EV << "Total Retry " << totalRetry2 << endl;
     EV << "PDR2:   " << (double)numPuback/numPublish << endl;
     EV << "DPR:   " << (double)numThrow/numMessage << endl;
+    //EV << "mean strong RTT: " << totalRttS/numStrong << endl;
     EV << "mean RTT:   " << totalRtt/numPuback << endl;
     EV << "mean Retry: " << (double)totalRetry2/numPublish << endl;
 
@@ -879,6 +887,7 @@ void Sensor::finish()
     //recordScalar("#total RTT", totalRtt);
     recordScalar("#PDR2", (double)numPuback/numPublish);
     recordScalar("#DPR", (double)numThrow/numMessage);
+    //recordScalar("#mean strong RTT", totalRttS/numStrong);
     recordScalar("#mean RTT", totalRtt/numPuback);
     recordScalar("#mean Retry", (double)totalRetry2/numPublish);
     recordScalar("#total Retry", totalRetry2);

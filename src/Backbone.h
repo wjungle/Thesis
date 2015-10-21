@@ -25,6 +25,7 @@ class Backbone : public cDelayChannel
     long int counter;
     double constant, gamma;
     double alpha, beta;
+    simtime_t delay;
 
   public:
     explicit Backbone(const char *name = NULL) : cDelayChannel(name) { counter = 0; }

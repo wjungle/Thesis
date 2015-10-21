@@ -53,7 +53,7 @@ class Sensor : public cSimpleModule
     double Rtt, Rtt_s, Rtt_w;
     double srtt, rttvar, Rto, RtoS, RtoW, RtoA;
     double srttS, rttvarS, srttW, rttvarW;
-    double totalRtt, strongRtt, weakRtt;
+    double totalRtt, totalRttS, strongRtt, weakRtt;
     int idxS, idxW;
 
     // thesis

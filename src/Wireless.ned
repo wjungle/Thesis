@@ -14,5 +14,6 @@ channel Wireless extends ned.DelayChannel
 	volatile double gammaAlpha @prompt("alpha of Gamma distribution");
 	volatile double gammaBeta @prompt("beta of Gamma distribution");
 	volatile double gammaConst @prompt("constant of Gamma distribution");
+	volatile double coefficient @prompt("coefficient after gereralization");
 }
 

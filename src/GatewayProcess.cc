@@ -137,7 +137,7 @@ void GatewayProcess::handleMessage(cMessage *msg)
                     rtoSensor = 0.75 * rtoSensor + 0.25 * rtoSensorW;
                 }
                 ev << " ;rtoSensor = " << rtoSensor << endl;
-                RtoSensorVector.record(rtoSensor);
+//                RtoSensorVector.record(rtoSensor);
             }
             else
                 numAging++;
@@ -401,10 +401,10 @@ void GatewayProcess::handleMessage(cMessage *msg)
                 strongRtt += Rtt_s;
                 weakRtt += Rtt_w;
 
-                RttVector.record(Rtt);
-                RtoVector.record(rtoGw);
-                RttsVector.record(Rtt_s);
-                RttwVector.record(Rtt_w);
+//                RttVector.record(Rtt);
+//                RtoVector.record(rtoGw);
+//                RttsVector.record(Rtt_s);
+//                RttwVector.record(Rtt_w);
 
                 char msgname0[20];
                 sprintf(msgname0, "(%d) #%d ", clientId, mqmsg->getSerialNumber());//getIndex()
