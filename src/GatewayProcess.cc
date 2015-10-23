@@ -122,6 +122,7 @@ void GatewayProcess::handleMessage(cMessage *msg)
                 rttSensorS = value[idxS];
                 rttSensorW = value[idxW];
                 ev << "rttSensorS= " << rttSensorS << " rttSensorW= " << rttSensorW << endl;
+#if 1
                 if (rttSensorS > 0)
                 {
                     numStrong++;
@@ -136,6 +137,15 @@ void GatewayProcess::handleMessage(cMessage *msg)
                     ev << "rtoSensorW= " << rtoSensorW ;
                     rtoSensor = 0.75 * rtoSensor + 0.25 * rtoSensorW;
                 }
+#else           // only strong
+                if (rttSensorS > 0)
+                {
+                    numStrong++;
+                    rtoSensorS = rfc6298(&srttSensorS, &rttvarSensorS, rttSensorS, numStrong, 4);
+                    ev << "rtoSensorS= " << rtoSensorS ;
+                    rtoSensor = rtoSensorS;
+                }
+#endif
                 ev << " ;rtoSensor = " << rtoSensor << endl;
 //                RtoSensorVector.record(rtoSensor);
             }
