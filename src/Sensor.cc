@@ -281,6 +281,7 @@ void Sensor::handleMessage(cMessage *msg)
 //        ev << "PUBACK-src= " << mqmsg->getSrcAddress() << " dest= " << mqmsg->getDestAddress() << endl;
 //        ev << "sensor address= " << getIndex() << " rto from gateway= " << value[mqmsg->getRto()]<< endl;
 
+        // overhear rto from others
         if (mqmsg->getDestAddress() != getIndex())
         {
             if(mqmsg->getRto()>0)
@@ -288,15 +289,23 @@ void Sensor::handleMessage(cMessage *msg)
                 ev << "(others)rto from gateway= " << value[mqmsg->getRto()] << " current RTO= " << Rto << endl;
                 if (overhearing == 1)
                 {
+#if 1
+                    if ((value[mqmsg->getRto()] > Rto) && (value[mqmsg->getRto()] - Rto <=2))
+                        Rto = value[mqmsg->getRto()];
+                    if ((value[mqmsg->getRto()] < Rto) && (Rto - value[mqmsg->getRto()] <= 1))
+                        Rto = value[mqmsg->getRto()];
+#else
                     if (Rto < value[mqmsg->getRto()])
                     {
                         ev << "change RTO with overhearing!\n";
                         Rto = value[mqmsg->getRto()];
                     }
+#endif
                 }
             }
             delete mqmsg;
         }
+        // the rto is its own
         else
         {
             if(mqmsg->getRto()>0)
@@ -441,11 +450,9 @@ void Sensor::handleMessage(cMessage *msg)
                             idxW = quantization(Rtt_w);
                             idxS = 0;
                         }
+                        // init of rtoGateway is -1, if this > 0 indicates there is value from gateway
                         if (rtoGateway > 0)
                         {
-//                            if ((rtoGateway > Rto) && (rtoGateway - Rto <=2))
-//                                Rto = rtoGateway;
-//                            if ((rtoGateway < Rto) && (Rto - rtoGateway <= 1))
                                 Rto = rtoGateway;
                         }
                     }
