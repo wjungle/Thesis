@@ -289,7 +289,7 @@ void Sensor::handleMessage(cMessage *msg)
                 ev << "(others)rto from gateway= " << value[mqmsg->getRto()] << " current RTO= " << Rto << endl;
                 if (overhearing == 1)
                 {
-#if 1
+#if 0
                     if ((value[mqmsg->getRto()] > Rto) && (value[mqmsg->getRto()] - Rto <=2))
                         Rto = value[mqmsg->getRto()];
                     if ((value[mqmsg->getRto()] < Rto) && (Rto - value[mqmsg->getRto()] <= 1))

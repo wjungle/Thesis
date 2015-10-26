@@ -46,7 +46,7 @@ void Backbone::processMessage(cMessage *msg, simtime_t t, result_t& result)
         constant = par("gammaConst");
         gamma = gamma_d(par("gammaAlpha"), par("gammaBeta"));
         gamma /= (alpha * beta);
-        delay = constant + (gamma*0.01);
+        delay = constant + (gamma*0.1);
 #else
         delay = par("IaTime");
 #endif
