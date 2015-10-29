@@ -154,11 +154,14 @@ void GatewayProcess::handleMessage(cMessage *msg)
         }
 #endif
 
-        publishMessageSn = mqmsg -> getSerialNumber();
-        publishMessageRe = mqmsg -> getSensorRetry();
-        src = mqmsg -> getSrcAddress();
-        dest = mqmsg -> getDestAddress();
-        clientId = mqmsg -> getClientId();
+        if (publishMessageSn <= mqmsg -> getSerialNumber())
+        {
+            publishMessageSn = mqmsg -> getSerialNumber();
+            publishMessageRe = mqmsg -> getSensorRetry();
+            src = mqmsg -> getSrcAddress();
+            dest = mqmsg -> getDestAddress();
+            clientId = mqmsg -> getClientId();
+        }
 
         numRecPub++;
 
@@ -412,7 +415,7 @@ void GatewayProcess::handleMessage(cMessage *msg)
                 weakRtt += Rtt_w;
 
 //                RttVector.record(Rtt);
-//                RtoVector.record(rtoGw);
+                RtoVector.record(rtoSensor);
 //                RttsVector.record(Rtt_s);
 //                RttwVector.record(Rtt_w);
 
