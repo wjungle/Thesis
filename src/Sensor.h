@@ -41,7 +41,7 @@ class Sensor : public cSimpleModule
     MqttMessage *publish, *puback, *searchgw, *gwinfo, *advertise, *connect;
 
     int seq, busy;
-    int failed, successful, retransmission;
+    int failed, successful, retransmission, preemptive;
     int ownAddr, serverAddr, gatewayAddr;
     int brokerprocId, gatewayprocId;
 
