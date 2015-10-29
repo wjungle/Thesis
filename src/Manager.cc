@@ -44,6 +44,8 @@ void Manager::initialize()
     rtoAll=0;
 
     initQuantization();
+
+    //ev << "getVectorSize()" << gate("line$o", 0)->getVectorSize() << endl;
 }
 
 void Manager::handleMessage(cMessage *msg)
@@ -102,10 +104,12 @@ void Manager::handleMessage(cMessage *msg)
 
         if (broadcast == 1)
         {
-            for(int i = 0; i < (gate("line$o", 0)->getVectorSize()-1); i++)
+            for(int i = 0; i < (gate("line$o", 0)->getVectorSize()); i++)
             {
                 cMessage *copy = mqmsg->dup();
                 send(copy, "line$o", i);
+                EV << "sending Time: " << copy->getSendingTime();
+                EV << ";arrival Time: " << copy->getArrivalTime();
             }
             delete mqmsg;
         }
@@ -116,6 +120,7 @@ void Manager::handleMessage(cMessage *msg)
             EV << "sending Time: " << mqmsg->getSendingTime();
             EV << ";arrival Time: " << mqmsg->getArrivalTime();
         }
+
     }
 }
 
