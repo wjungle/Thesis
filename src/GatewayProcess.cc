@@ -435,8 +435,6 @@ void GatewayProcess::handleMessage(cMessage *msg)
                 gatewaySrcGate = getParentModule()->gate("line$o", 0);
 
                 sendDirect(puback, gatewaySrcGate);
-                EV << "sending Time: " << puback->getSendingTime();
-                EV << ";arrival Time: " << puback->getArrivalTime();
                 trafficLight = GREEN;
                 puback = NULL;
 //            }

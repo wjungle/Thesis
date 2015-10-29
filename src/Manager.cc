@@ -113,6 +113,8 @@ void Manager::handleMessage(cMessage *msg)
         {
             dest = mqmsg->getDestAddress();
             send(mqmsg, "line$o", dest);
+            EV << "sending Time: " << mqmsg->getSendingTime();
+            EV << ";arrival Time: " << mqmsg->getArrivalTime();
         }
     }
 }
