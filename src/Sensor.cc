@@ -69,7 +69,7 @@ void Sensor::initialize()
     currReceackSn = -1; currReceackRe = -1;
     currNumberOfRetry = 0; currPubackSn = 0;
 
-    totalRetry = 0; totalRetry2=0;
+    totalRetry = 0; totalRetry2=0; totalRetryP=0; totalRetryF=0; totalRetryS=0;
     Rtt = 0; Rtt_s = 0; Rtt_w = 0;
     Rto = 1; RtoS= 1; RtoW= 1; RtoA=0;
     srtt=0; rttvar=0; srttS=0; rttvarS=0; srttW=0; rttvarW=0;
@@ -259,7 +259,7 @@ void Sensor::handleMessage(cMessage *msg)
             else
             {
                 EV << currTimeoutSn << " failed";
-                totalRetry += maxRetry;
+                totalRetryF += maxRetry;
                 if (par("discipline").longValue() == 1)
                 {
                     retransmission = 0;                 //coap
@@ -269,7 +269,7 @@ void Sensor::handleMessage(cMessage *msg)
 //                std::cerr << "failed= " <<  mqmsg->getSerialNumber() << endl;
                 numFailed++;
                 EV << " numFailed= " << numFailed;
-                EV <<" total Retry= " << totalRetry <<endl;
+                EV <<" total Retry F= " << totalRetryF <<endl;
                 //delete publish;
             }
         }
@@ -345,7 +345,12 @@ void Sensor::handleMessage(cMessage *msg)
                     // EV << "Timer cancelled.\n";
                     cancelEvent(timeoutEvent);
 
-                    totalRetry += mqmsg->getSensorRetry();
+                    if ((currTimeoutSn == currReceackSn) && (currTimeoutRe >= currReceackRe))   //although retransmit, accept receack
+                    {
+                        totalRetryS += currTimeoutRe + 1;
+                    }
+                    totalRetryS += mqmsg->getSensorRetry();
+
                     receackTimestamp = mqmsg->getArrivalTime().dbl();
                     Rtt = receackTimestamp - messageTimestamp;
 
@@ -458,9 +463,10 @@ void Sensor::handleMessage(cMessage *msg)
                     }
 
                     totalRtt += Rtt;
+                    totalRto += Rto;
                     totalRttS += Rtt_s;
-                    //RttVector.record(Rtt);
-                    //RtoVector.record(Rto);
+                    RttVector.record(Rtt);
+                    RtoVector.record(Rto);
     //                RttsVector.record(Rtt_s);
     //                RttwVector.record(Rtt_w);
 
@@ -470,6 +476,12 @@ void Sensor::handleMessage(cMessage *msg)
                     sprintf(msgname, "(%d) #%d ", getIndex(), mqmsg->getSerialNumber());
                     EV << msgname << "======================>>calcRTT= " << Rtt << " totalRetry2= " << totalRetry2 <<endl;
                     EV << "==========================>>RTT_s= " << Rtt_s << " Rtt_w= " << Rtt_w << " Rto= " << Rto << endl;
+
+                    EV << "total Retry2:"<< totalRetry2 << endl;
+                    EV << "total RetryS:"<< totalRetryS << endl;
+
+                    if (totalRetry2 != totalRetryS+totalRetryF)
+                        std::cerr << simTime() << endl;
 
                     if (par("discipline").longValue() == 1)
                     {
@@ -537,6 +549,9 @@ void Sensor::handlePublish(int busy, int retransmission, long discipline)
         if( !busy || retransmission != 0 )
         {
             handlePublishCoap();
+            EV << "total Retry2:"<< totalRetry2 << endl;
+            EV << "total Retry1:"<< totalRetry << endl;
+            EV << "total RetryP:"<< totalRetryP << endl;
         }
         else
             numThrow++;
@@ -576,7 +591,7 @@ void Sensor::handlePublishCoap()
         cancelEvent(timeoutEvent);      //verify
         retransmission = 0;
         retry = currNumberOfRetry;
-        totalRetry += currNumberOfRetry;
+        totalRetryP += currNumberOfRetry;
         currNumberOfRetry = 0;
         numPreemptived++;
         ev << "numPreemptived= " << numPreemptived << endl;
@@ -879,7 +894,13 @@ void Sensor::finish()
     EV << "DPR:   " << (double)numThrow/numMessage << endl;
     //EV << "mean strong RTT: " << totalRttS/numStrong << endl;
     EV << "mean RTT:   " << totalRtt/numPuback << endl;
+    EV << "mean RTO:   " << totalRto/numPuback << endl;
     EV << "mean Retry: " << (double)totalRetry2/numPublish << endl;
+    EV << "total Retry2:"<< totalRetry2 << endl;
+    EV << "total Retry1:"<< totalRetry << endl;
+    EV << "total Retry for Premmption:"<< totalRetryP << endl;
+    EV << "total Retry for Failed:"<< totalRetryF << endl;
+    EV << "total Retry for Successful:"<< totalRetryS << endl;
 
     //EV << "numYes= " << numYes << " numNo= " << numNo << endl;
 
@@ -896,6 +917,9 @@ void Sensor::finish()
     recordScalar("#DPR", (double)numThrow/numMessage);
     //recordScalar("#mean strong RTT", totalRttS/numStrong);
     recordScalar("#mean RTT", totalRtt/numPuback);
+    recordScalar("#mean RTO", totalRto/numPuback);
     recordScalar("#mean Retry", (double)totalRetry2/numPublish);
-    recordScalar("#total Retry", totalRetry2);
+    recordScalar("#total Retry2", totalRetry2);
+    recordScalar("#total Retry", totalRetry);
+    recordScalar("#total Retry P", totalRetryP);
 }

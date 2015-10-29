@@ -49,11 +49,11 @@ class Sensor : public cSimpleModule
     int currReceackSn, currReceackRe;
     int currNumberOfRetry;
 
-    unsigned int totalRetry, totalRetry2;
+    unsigned int totalRetry, totalRetry2, totalRetryP, totalRetryF, totalRetryS;
     double Rtt, Rtt_s, Rtt_w;
     double srtt, rttvar, Rto, RtoS, RtoW, RtoA;
     double srttS, rttvarS, srttW, rttvarW;
-    double totalRtt, totalRttS, strongRtt, weakRtt;
+    double totalRtt, totalRto, totalRttS, strongRtt, weakRtt;
     int idxS, idxW;
 
     // thesis
