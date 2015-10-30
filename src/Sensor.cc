@@ -175,7 +175,7 @@ void Sensor::handleMessage(cMessage *msg)
     // aging
     else if (mqmsg->getKind() == SELF_TIMEOUT_A)
     {
-        std::cerr << "aging" << endl;
+        std::cerr << "aging " << endl;
         if (Rto == RtoA)
             Rto = (2 + Rto) / 2;
     }
@@ -260,10 +260,7 @@ void Sensor::handleMessage(cMessage *msg)
             {
                 EV << currTimeoutSn << " failed";
                 totalRetryF += maxRetry;
-                if (par("discipline").longValue() == 1)
-                {
-                    retransmission = 0;                 //coap
-                }
+                resetPara();
                 busy = 0;
                 failed = mqmsg->getSerialNumber();
 //                std::cerr << "failed= " <<  mqmsg->getSerialNumber() << endl;
@@ -345,6 +342,7 @@ void Sensor::handleMessage(cMessage *msg)
                     // EV << "Timer cancelled.\n";
                     cancelEvent(timeoutEvent);
 
+                    // separate number of retry
                     if (par("discipline").longValue() == 0)
                     {
                         //although retransmit, accept receack
@@ -503,12 +501,7 @@ void Sensor::handleMessage(cMessage *msg)
                     if (totalRetry2 != totalRetryS+totalRetryF)
                         std::cerr << simTime() << endl;
 
-                    if (par("discipline").longValue() == 1)
-                    {
-                        retransmission = 0;             //coap discipline
-                        currNumberOfRetry = 0;          //coap discipline
-                        preemptive = 0;
-                    }
+                    resetPara();
 
     #if 0
                     if (numPublish > 1000000)
@@ -570,6 +563,9 @@ void Sensor::handlePublish(int busy, int retransmission, long discipline)
         if( !busy || retransmission != 0 )
         {
             handlePublishCoap();
+            EV << "total Retry2:"<< totalRetry2 << endl;
+            EV << "total RetryS:"<< totalRetryS << endl;
+            EV << "total RetryF:"<< totalRetryF << endl;
         }
         else
             numThrow++;
@@ -847,6 +843,16 @@ bool Sensor::IsPubackValid(unsigned cMesSn, unsigned cTimSn, unsigned cTimRe, un
             return true;
     }
     return false;
+}
+
+void Sensor::resetPara()
+{
+    if (par("discipline").longValue() == 1)
+    {
+        retransmission = 0;             //coap discipline
+        currNumberOfRetry = 0;          //coap discipline
+        preemptive = 0;
+    }
 }
 
 void Sensor::initQuantization()

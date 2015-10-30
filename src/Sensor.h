@@ -90,6 +90,7 @@ class Sensor : public cSimpleModule
     virtual double rfc6298(double*, double*, double, unsigned, unsigned);
 //    virtual bool isSensorPhase(unsigned int, unsigned int, unsigned int, unsigned int);
     virtual bool IsPubackValid(unsigned, unsigned, unsigned, unsigned, unsigned);
+    virtual void resetPara();
     virtual void initQuantization();
     virtual int quantization(double);
     virtual void updateDisplay();
