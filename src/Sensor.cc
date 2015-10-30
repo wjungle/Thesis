@@ -206,7 +206,7 @@ void Sensor::handleMessage(cMessage *msg)
             delete connect;
         }
     }
-
+#if 1
     // PUBLISH (MESSAGE)
     else if(mqmsg->getKind() == SELF_MESSAGE_E)  // generate interval of message generation
     {
@@ -217,8 +217,8 @@ void Sensor::handleMessage(cMessage *msg)
 
         handlePublish(busy, retransmission, par("discipline").longValue());
     }
-
-#if 1
+#endif
+#if 0
     else if(mqmsg->getKind() == SELF_MESSAGE_F)  // generate interval of message generation
     {
         // Generate publish event.
@@ -357,7 +357,7 @@ void Sensor::handleMessage(cMessage *msg)
                         ev << "retransmission= " << retransmission << endl;
                         if ((currMessageSn == currReceackSn) && (currMessageSs == currReceackRe))
                         {
-                            if((currTimeoutSn == currReceackSn) && (currTimeoutRe == currReceackRe))
+                            if((currTimeoutSn == currReceackSn) && (currTimeoutRe >= currReceackRe))
                             {
                                 // if timeout has happened, receack after timeout
                                 totalRetryS += currTimeoutRe + 1;
@@ -661,6 +661,7 @@ void Sensor::handleTimeout(MqttMessage *mqmsg)
     timeoutEvent->setSensorRetry(mqmsg->getSensorRetry()+1);
 
     rtoCalc = settingRtoTimeout(mqmsg->getRtoInit(), mqmsg->getRtoCalc(), rtoMultMethod);
+    timeoutEvent->setRtoCalc(rtoCalc);
 
 //    if(par("rtoMultiMethod").longValue() == 0)
 //        rtoCalc = rtoFixed;
