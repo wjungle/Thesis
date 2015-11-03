@@ -23,6 +23,7 @@ void Backbone::initialize()
     plr = par("PLR");
     alpha = par("gammaAlpha");
     beta = par("gammaBeta");
+    rttSource = par("rttSource");
 }
 
 void Backbone::processMessage(cMessage *msg, simtime_t t, result_t& result)
@@ -43,10 +44,17 @@ void Backbone::processMessage(cMessage *msg, simtime_t t, result_t& result)
         // propagation delay modeling
 #if 1
 
-        constant = par("gammaConst");
-        gamma = gamma_d(par("gammaAlpha"), par("gammaBeta"));
-        gamma /= (alpha * beta);
-        delay = constant + (gamma*0.1);
+//        constant = par("gammaConst");
+//        gamma = gamma_d(par("gammaAlpha"), par("gammaBeta"));
+//        gamma /= (alpha * beta);
+//        delay = constant + (gamma*0.1);
+
+        // sin()
+        if (rttSource == 0)
+            delay = 0.5 * sin(1.25 * simTime().dbl()) + 1;
+        // saw-like
+        else if (rttSource == 1)
+            delay = (1 * ((0.2 * simTime().dbl()) - ceil(0.2 * simTime().dbl()))) + 1.5;
 #else
         delay = par("IaTime");
 #endif

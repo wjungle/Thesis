@@ -18,15 +18,21 @@
 
 #include <omnetpp.h>
 
+#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+
 class Wireless : public cDelayChannel
 {
   private:
     double plr;
     long int counter;
-    double constant, gamma, coeff;
-    double alpha, beta;
-    simtime_t delay;
+    double constant, coeff;
+    double alpha, beta, gamma1, gamma2;
+    double mean, bVar, variance;
+    simtime_t delay, olderDelay, temp;
     //std::ofstream logfile;
+    cOutVector DelayVector, gamma1Vector, gamma2Vector, tempVector;
+    int cntP,cntS;
+    int rttSource;
 
   public:
     explicit Wireless(const char *name = NULL) : cDelayChannel(name) { counter = 0; }

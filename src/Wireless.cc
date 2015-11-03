@@ -22,8 +22,25 @@ void Wireless::initialize()
     //EV << "PacketLogger initialize()\n";
     cDelayChannel::initialize();
     plr = par("PLR");
-    alpha = par("gammaAlpha");
-    beta = par("gammaBeta");
+//    alpha = par("gammaAlpha");
+//    beta = par("gammaBeta");
+    constant = par("gammaConst");
+    mean = par("mean");
+//    bVar = par("bVar");
+    olderDelay = mean;
+    rttSource = par("rttSource");
+
+    DelayVector.setName("wireless Delay");
+    gamma1Vector.setName("wireless gamma1");
+    gamma2Vector.setName("wireless gamma2");
+    //tempVector.setName("wireless temp");
+
+//    temp = 0;
+//    variance = bVar;
+//    beta = variance/mean;
+//    alpha = mean/beta;
+
+    cntP=0;cntS=0;
 }
 
 void Wireless::processMessage(cMessage *msg, simtime_t t, result_t& result)
@@ -44,14 +61,46 @@ void Wireless::processMessage(cMessage *msg, simtime_t t, result_t& result)
 
         // propagation delay modeling
 #if 1
-        constant = par("gammaConst");
-        gamma = gamma_d(alpha, beta);
-        gamma /= (alpha*beta);
-        coeff = par("coefficient");
-        delay = constant + (gamma*coeff);
+//        gamma = gamma_d(alpha, beta);
+//        gamma /= (alpha*beta);
+//        coeff = par("coefficient");
+//        delay = constant + (gamma*coeff);
+
+        // sin()
+        if (rttSource == 0)
+            delay = mean * sin(1.5 * simTime().dbl()) + (mean+constant);
+        // saw-like
+        else if (rttSource == 1)
+            delay = ((2*mean) * ((0.2 * simTime().dbl()) - ceil(0.2 * simTime().dbl()))) + (2*mean+constant);
 #else
-        delay = par("IaTime");
+//        variance = bVar;
+//        beta = variance/mean;
+//        alpha = mean/beta;
+
+        if (uniform(0,1) < 0.5)
+        {
+            gamma1 = gamma_d(alpha, beta);
+            temp = olderDelay + gamma1;
+//            delay = MAX(temp, constant);
+            cntP++;
+        }
+        else
+        {
+            gamma2 = gamma_d(alpha, beta);
+            temp = olderDelay - gamma2;
+//            delay = MAX(temp, constant);
+            cntS++;
+        }
+        delay = MAX(temp, constant);
+        olderDelay = temp;
+        //olderDelay = delay;
+
+        //delay = par("IaTime");
 #endif
+        DelayVector.record(delay);
+        gamma1Vector.record(gamma1);
+        gamma2Vector.record(gamma2);
+        //tempVector.record(temp);
 
         EV <<" (w)delay Time: " << delay <<endl;
         result.delay = delay;
@@ -59,8 +108,14 @@ void Wireless::processMessage(cMessage *msg, simtime_t t, result_t& result)
 
 }
 
+//void Wireless::MAX(double a, )
+
 void Wireless::finish()
 {
     //EV << "PacketLogger finish()\n";
+//    EV << "cntP :"<< cntP << endl;
+//    EV << "cntS :"<< cntS << endl;
+//    recordScalar("#cntP", cntP);
+//    recordScalar("#cntS", cntS);
 }
 

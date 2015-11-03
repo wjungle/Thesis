@@ -510,7 +510,7 @@ void Sensor::handleMessage(cMessage *msg)
 
                     // debug use
                     if (totalRetry2 != totalRetryS+totalRetryF)
-                        std::cerr << simTime() << endl;
+                        std::cerr << "retry error:" << simTime() << endl;
                     if (numPublish + numThrow != numMessage)
                         std::cerr << "error 1" << endl;
                     if (numPuback + numFailed + numPreemptived != numPublish)
