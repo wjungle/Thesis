@@ -638,6 +638,7 @@ void GatewayProcess::finish()
     EV << "mean Retry: " << (double)totalRetry2/numPublish << endl;
 
     recordScalar("#RTO gw", rtoGw);
+    recordScalar("#totalRetry", totalRetry2);
     //recordScalar("#RTO", rto);
     //recordScalar("#RTO", rto);
 }

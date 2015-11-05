@@ -30,7 +30,7 @@ class Wireless : public cDelayChannel
     double mean, bVar, variance;
     simtime_t delay, olderDelay, temp;
     //std::ofstream logfile;
-    cOutVector DelayVector, gamma1Vector, gamma2Vector, tempVector;
+    cOutVector DelayVector, /*gamma1Vector, gamma2Vector,*/ tempVector;
     int cntP,cntS;
     int rttSource;
 

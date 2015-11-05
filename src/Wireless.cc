@@ -31,8 +31,8 @@ void Wireless::initialize()
     rttSource = par("rttSource");
 
     DelayVector.setName("wireless Delay");
-    gamma1Vector.setName("wireless gamma1");
-    gamma2Vector.setName("wireless gamma2");
+//    gamma1Vector.setName("wireless gamma1");
+//    gamma2Vector.setName("wireless gamma2");
     //tempVector.setName("wireless temp");
 
 //    temp = 0;
@@ -72,35 +72,35 @@ void Wireless::processMessage(cMessage *msg, simtime_t t, result_t& result)
             //delay = 0.07 * sin(1.25 * simTime().dbl()) + 0.08;
         // saw-like
         else if (rttSource == 1)
-            delay = ((2*mean) * ((0.2 * simTime().dbl()) - ceil(0.2 * simTime().dbl()))) + (2*mean+constant);
+            delay = ((2*mean) * (( (0.12/2*mean) * simTime().dbl()) - ceil((0.12/2*mean) * simTime().dbl()))) + (2*mean+constant);
 #else
-//        variance = bVar;
-//        beta = variance/mean;
-//        alpha = mean/beta;
+////        variance = bVar;
+////        beta = variance/mean;
+////        alpha = mean/beta;
+//
+//        if (uniform(0,1) < 0.5)
+//        {
+//            gamma1 = gamma_d(alpha, beta);
+//            temp = olderDelay + gamma1;
+////            delay = MAX(temp, constant);
+//            cntP++;
+//        }
+//        else
+//        {
+//            gamma2 = gamma_d(alpha, beta);
+//            temp = olderDelay - gamma2;
+////            delay = MAX(temp, constant);
+//            cntS++;
+//        }
+//        delay = MAX(temp, constant);
+//        olderDelay = temp;
+//        //olderDelay = delay;
 
-        if (uniform(0,1) < 0.5)
-        {
-            gamma1 = gamma_d(alpha, beta);
-            temp = olderDelay + gamma1;
-//            delay = MAX(temp, constant);
-            cntP++;
-        }
-        else
-        {
-            gamma2 = gamma_d(alpha, beta);
-            temp = olderDelay - gamma2;
-//            delay = MAX(temp, constant);
-            cntS++;
-        }
-        delay = MAX(temp, constant);
-        olderDelay = temp;
-        //olderDelay = delay;
-
-        //delay = par("IaTime");
+        delay = par("IaTime");
 #endif
         DelayVector.record(delay);
-        gamma1Vector.record(gamma1);
-        gamma2Vector.record(gamma2);
+//        gamma1Vector.record(gamma1);
+//        gamma2Vector.record(gamma2);
         //tempVector.record(temp);
 
         EV <<" (w)delay Time: " << delay <<endl;
