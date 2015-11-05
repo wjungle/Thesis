@@ -52,6 +52,7 @@ void Backbone::processMessage(cMessage *msg, simtime_t t, result_t& result)
         // sin()
         if (rttSource == 0)
             delay = 0.5 * sin(1.25 * simTime().dbl()) + 1;
+            //delay = 0.07 * sin(1.25 * simTime().dbl()) + 0.08;
         // saw-like
         else if (rttSource == 1)
             delay = (1 * ((0.2 * simTime().dbl()) - ceil(0.2 * simTime().dbl()))) + 1.5;
