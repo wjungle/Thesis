@@ -33,6 +33,7 @@ void BrokerProcess::initialize()
     brokerOutGate = getParentModule()->gate("out");
     fromMessageSn = 0; fromSensorRe = 0; fromGatewayRe = 0;
     currMessageSn = 0;
+    nonincreaseSn = 0;
 }
 
 void BrokerProcess::handleMessage(cMessage *msg)
@@ -55,7 +56,6 @@ void BrokerProcess::handleMessage(cMessage *msg)
     }
     else if (mqmsg->getKind() == MQTT_PUBLISH)
     {
-        static int nonincreaseSn = 0;
         if (nonincreaseSn < mqmsg->getSerialNumber())
         {
             numPublish++;

@@ -39,6 +39,7 @@ class BrokerProcess : public cSimpleModule
     double tcpPLR;
     cGate *brokerOutGate;
     int gatewayProcId;
+    int nonincreaseSn;
 
   public:
     BrokerProcess();
