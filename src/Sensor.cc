@@ -442,7 +442,7 @@ void Sensor::handleMessage(cMessage *msg)
         //                        }
         //                    }
                         }
-                        else
+                        else if (mqmsg->getSensorRetry() == 1)
                         {
                             numWeak++;
                             Rtt_w = receackTimestamp - messageTimestamp;
@@ -471,7 +471,7 @@ void Sensor::handleMessage(cMessage *msg)
                             idxS = quantization(Rtt_s);
                             idxW = 0;
                         }
-                        else
+                        else if (mqmsg->getSensorRetry() == 1)
                         {
                             numWeak++;
                             Rtt_w = receackTimestamp - messageTimestamp;
