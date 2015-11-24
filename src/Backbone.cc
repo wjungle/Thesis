@@ -21,8 +21,8 @@ void Backbone::initialize()
 {
     cDelayChannel::initialize();
     plr = par("PLR");
-    alpha = par("gammaAlpha");
-    beta = par("gammaBeta");
+    //alpha = par("gammaAlpha");
+    //beta = par("gammaBeta");
     rttSource = par("rttSource");
     DelayVector.setName("wireless Delay");
 }
